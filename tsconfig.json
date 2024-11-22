@@ -10,6 +10,7 @@
       "@controllers/*": ["src/controllers/*"],
       "@services/*": ["src/services/*"],
       "@models/*": ["src/models/*"],
+      "@views/*": ["src/views/*"],
       "@config/*": ["src/config/*"],
       "@middlewares/*": ["src/middlewares/*"]
     }
