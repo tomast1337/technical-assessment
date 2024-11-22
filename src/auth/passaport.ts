@@ -1,6 +1,5 @@
-import passport from 'passport';
+import * as passport from 'passport';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
-
 import { env } from '@config/index';
 import { UserModel } from '@models/index';
 
