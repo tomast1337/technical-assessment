@@ -27,7 +27,7 @@ export class Region {
   @Prop({ required: true })
   name!: string;
 
-  @Prop({ required: true, type: () => [[Number]] })
+  @Prop({ required: true })
   coordinates: [number, number][][];
 
   @Prop({ ref: () => User, required: true, type: () => String })
