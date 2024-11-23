@@ -8,7 +8,7 @@ import * as sinon from 'sinon';
 import '../database';
 import GeoLib from '../lib';
 import '../server';
-import { loginUser, me, registerUser, updatePassword } from './auth.service';
+import { loginUser, registerUser, updatePassword } from './auth.service';
 describe('Auth Service', () => {
   let session;
   let sandbox: sinon.SinonSandbox;

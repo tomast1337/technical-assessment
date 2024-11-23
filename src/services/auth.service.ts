@@ -67,16 +67,6 @@ export const loginUser = async ({ email, password }: LoginUserDto) => {
   return { token, refreshToken };
 };
 
-export const me = async (id: string) => {
-  const user = await UserModel.findOne<User>({ _id: id });
-
-  if (!user) {
-    throw new Error('User not found');
-  }
-
-  return user;
-};
-
 export async function updatePassword(id: string, password: string) {
   const user = await UserModel.findOne({ _id: id });
 
