@@ -11,7 +11,7 @@ import GeoLib from '../lib';
 import '../server';
 
 
-describe('Auth Controler', () => {
+describe('Auth E2E', () => {
   let axiosInstance;
   let session;
   let sandbox: sinon.SinonSandbox;
