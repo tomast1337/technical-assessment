@@ -1,10 +1,9 @@
 import { getModelForClass } from '@typegoose/typegoose';
 import { expect } from 'chai';
 import * as mongoose from 'mongoose';
-import { Types } from 'mongoose';
 import * as sinon from 'sinon';
+
 import { User } from './user.model';
-import { Region } from './region.model';
 import lib from '../lib';
 
 const UserModel = getModelForClass(User);
@@ -25,6 +24,7 @@ describe('User Model', () => {
     getAddressFromCoordinatesStub = sandbox
       .stub(lib, 'getAddressFromCoordinates')
       .resolves('Mock Address');
+
     getCoordinatesFromAddressStub = sandbox
       .stub(lib, 'getCoordinatesFromAddress')
       .resolves({ lat: 10, lng: 20 });
@@ -40,6 +40,7 @@ describe('User Model', () => {
     const password = 'password';
     const address = '123 Test St';
     const coordinates: [number, number] = [10, 20];
+
     const userInstance = new UserModel({
       name,
       email,
@@ -47,6 +48,7 @@ describe('User Model', () => {
       address,
       coordinates,
     });
+
     const saveStub = sandbox.stub(userInstance, 'save').resolves(userInstance);
 
     await userInstance.save();
@@ -66,6 +68,7 @@ describe('User Model', () => {
     const password = 'password';
     const address = 'Mock Address';
     const coordinates: [number, number] = [10, 20];
+
     const userInstance = new UserModel({
       name,
       email,
@@ -73,6 +76,7 @@ describe('User Model', () => {
       address,
       coordinates,
     });
+
     const saveStub = sandbox.stub(userInstance, 'save').resolves(userInstance);
 
     userInstance.coordinates = [30, 40];
@@ -87,6 +91,7 @@ describe('User Model', () => {
     const password = 'password';
     const address = '123 Test St';
     const coordinates: [number, number] = [10, 20];
+
     const userInstance = new UserModel({
       name,
       email,
@@ -94,6 +99,7 @@ describe('User Model', () => {
       address,
       coordinates,
     });
+
     const saveStub = sandbox.stub(userInstance, 'save').resolves(userInstance);
 
     userInstance.address = '456 New St';
@@ -108,6 +114,7 @@ describe('User Model', () => {
     const password = 'password';
     const address = '123 Test St';
     const coordinates: [number, number] = [10, 20];
+
     const userInstance = new UserModel({
       name,
       email,
@@ -116,6 +123,7 @@ describe('User Model', () => {
       coordinates,
       regions: [],
     });
+
     const saveStub = sandbox.stub(userInstance, 'save').resolves(userInstance);
 
     const regionId = 'test-region-id';
