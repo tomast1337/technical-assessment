@@ -3,7 +3,6 @@ import {
   DecodedTokenT,
   RefreshToken,
   loginUser,
-  me,
   registerUser,
   updatePassword,
 } from '@services/auth.service';
@@ -103,46 +102,6 @@ authRouter.post(
 
     try {
       const result = await loginUser({ email, password });
-      res.status(StatusCodes.OK).json(result);
-    } catch (error) {
-      res.status(StatusCodes.BAD_REQUEST).json({ message: error.message });
-    }
-  },
-);
-
-/**
- * @swagger
- * /api/auth/me:
- *   get:
- *     summary: Get the current user
- *     tags: [Auth]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: The current user
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                 name:
- *                   type: string
- *                 email:
- *                   type: string
- *       400:
- *         description: Bad request
- */
-authRouter.get(
-  '/me',
-  passport.authenticate('jwt', { session: false }),
-  async (req: Request, res: Response) => {
-    const { id } = req.user as DecodedTokenT;
-
-    try {
-      const result = await me(id);
       res.status(StatusCodes.OK).json(result);
     } catch (error) {
       res.status(StatusCodes.BAD_REQUEST).json({ message: error.message });
