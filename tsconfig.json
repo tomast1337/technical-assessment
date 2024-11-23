@@ -5,7 +5,7 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "sourceMap": true,
-    "baseUrl": ".", // Base directory for resolving non-relative module names
+    "baseUrl": ".",
     "paths": {
       "@controllers/*": ["src/controllers/*"],
       "@services/*": ["src/services/*"],
