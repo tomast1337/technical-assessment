@@ -1,6 +1,7 @@
 import { plainToClass } from 'class-transformer';
-import { IsString, IsNotEmpty, IsNumber, validateSync } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, validateSync } from 'class-validator';
 import * as dotenv from 'dotenv';
+
 dotenv.config();
 
 export class Environment {
