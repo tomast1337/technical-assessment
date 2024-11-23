@@ -7,6 +7,28 @@ export const swaggerConfig: Options = {
       title: 'API Documentation',
       version: '1.0.0',
     },
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+        refreshToken: {
+          type: 'apiKey',
+          in: 'cookie',
+          name: 'refresh-token',
+        },
+      },
+    },
+    security: [
+      {
+        bearerAuth: [],
+      },
+      {
+        refreshToken: [],
+      },
+    ],
   },
-  apis: ['./src/controllers/*.ts'], // Adjust the paths as necessary
+  apis: ['./src/controllers/*.ts'],
 };
