@@ -39,7 +39,7 @@ module.exports = {
         'padding-line-between-statements': 'off',
         '@typescript-eslint/padding-line-between-statements': [
             'warn',
-            { blankLine: 'any', prev: 'import', next: '*' }, // handled by sort-imports
+            { blankLine: 'any', prev: 'import', next: '*' },
             { blankLine: 'any', prev: '*', next: 'singleline-const' },
             { blankLine: 'any', prev: '*', next: 'singleline-let' },
             { blankLine: 'any', prev: '*', next: 'singleline-var' },
@@ -99,10 +99,11 @@ module.exports = {
     settings: {
         'import/resolver': {
             typescript: {
+                alwaysTryTypes: true,
                 project: './tsconfig.json',
             },
             node: {
-                extensions: ['.js', '.jsx', '.ts'],
+                extensions: ['.js', '.jsx', '.ts', '.tsx'],
                 moduleDirectory: ['node_modules', 'src/'],
             },
         },
