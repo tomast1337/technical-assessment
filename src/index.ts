@@ -1,2 +1,2 @@
-import './database';
-import './server';
+import '@app/database';
+import '@app/server';
