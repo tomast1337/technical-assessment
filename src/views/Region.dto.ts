@@ -8,5 +8,5 @@ export class RegionDto {
 
   @IsArray()
   @ArrayMinSize(3)
-  coordinates: [number, number][][];
+  coordinates: [number, number][];
 }
