@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { IsBoolean, IsInt, IsOptional, IsString, Min } from 'class-validator';
 import { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import * as sinon from 'sinon';
+import { SinonStub, restore, stub } from 'sinon';
 
 import {
   validationBodyMiddleware,
@@ -30,9 +30,9 @@ class TestDto {
 describe('Validation Middleware', () => {
   let req: Partial<Request>;
   let res: Partial<Response>;
-  let next: sinon.SinonStub;
-  let statusStub: sinon.SinonStub;
-  let jsonStub: sinon.SinonStub;
+  let next: SinonStub;
+  let statusStub: SinonStub;
+  let jsonStub: SinonStub;
 
   beforeEach(() => {
     req = {};
@@ -44,15 +44,15 @@ describe('Validation Middleware', () => {
       json: function () {
         return this;
       },
-    };
+    } as any;
 
-    next = sinon.stub() as unknown as sinon.SinonStub;
-    statusStub = sinon.stub(res, 'status').returns(res as any);
-    jsonStub = sinon.stub(res, 'json').returns(res as any);
+    next = stub() as unknown as SinonStub;
+    statusStub = stub(res, 'status').returns(res as any);
+    jsonStub = stub(res, 'json').returns(res as any);
   });
 
   afterEach(() => {
-    sinon.restore();
+    restore();
   });
 
   describe('validationBodyMiddleware', () => {
