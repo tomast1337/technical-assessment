@@ -1,10 +1,11 @@
+import * as bcrypt from 'bcryptjs';
+import * as jwt from 'jsonwebtoken';
+
 import { env } from '@config/index';
 import { UserModel } from '@models/index';
 import { User } from '@models/user.model';
 import { LoginUserDto } from '@views/LoginUser.dto';
 import { RegisterUserDto } from '@views/RegisterUser.dto';
-import * as bcrypt from 'bcryptjs';
-import * as jwt from 'jsonwebtoken';
 
 export type JwtPayloadT = {
   id: string;
