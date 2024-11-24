@@ -1,19 +1,16 @@
-import { Router, Request, Response } from 'express';
+import { Request, Response, Router } from 'express';
 import * as passport from 'passport';
-import {
-  getUserById,
-  updateUser,
-  deleteUser,
-  getUsers,
-} from '@services/user.service';
-import { StatusCodes } from 'http-status-codes';
-import { User } from '@models/user.model';
-import { PagingDto } from '@views/Paging.dto';
+
 import {
   validationBodyMiddleware,
   validationQueryMiddleware,
 } from '@middlewares/validationMiddleware';
+import { User } from '@models/user.model';
+import UserService from '@services/user.service';
+import { PagingDto } from '@views/Paging.dto';
 import { UpdateUserDto } from '@views/UpdateUser.dto';
+import { StatusCodes } from 'http-status-codes';
+const { deleteUser, getUserById, getUsers, updateUser } = UserService;
 
 export const userRouter = Router();
 
@@ -210,10 +207,9 @@ userRouter.get(
   passport.authenticate('jwt', { session: false }),
   validationQueryMiddleware(PagingDto),
   async (req: Request, res: Response) => {
-    const user = req.user as User;
     const query = req.query as unknown as PagingDto;
     try {
-      const users = await getUsers(user, query);
+      const users = await getUsers(query);
       res.status(StatusCodes.OK).json(users);
     } catch (error) {
       res.status(StatusCodes.BAD_REQUEST).json({ message: error.message });
