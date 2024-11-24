@@ -41,11 +41,11 @@ class GeoLib {
       }
     } catch (error) {
       loggerLocal.error(
-        `Failed to get address from coordinates: ${error.message}`,
+        `Failed to get address from coordinates: ${(error as any).message}`,
       );
 
       throw new Error(
-        `Failed to get address from coordinates: ${error.message}`,
+        `Failed to get address from coordinates: ${(error as any).message}`,
       );
     }
   }
@@ -69,16 +69,14 @@ class GeoLib {
       }
     } catch (error) {
       loggerLocal.error(
-        `Failed to get coordinates from address: ${error.message}`,
+        `Failed to get coordinates from address: ${(error as any).message}`,
       );
 
       throw new Error(
-        `Failed to get coordinates from address: ${error.message}`,
+        `Failed to get coordinates from address: ${(error as any).message}`,
       );
     }
   }
 }
 
 export default new GeoLib();
-
-export { Coordinates, CoordinatesArr, CoordinatesObj, GeoLib };
