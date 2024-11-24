@@ -12,94 +12,100 @@ export type JwtPayloadT = {
 };
 
 export type DecodedTokenT = jwt.JwtPayload & JwtPayloadT;
-
-export const registerUser = async ({
-  name,
-  email,
-  password,
-  address,
-}: RegisterUserDto) => {
-  const existingUser = await UserModel.findOne({ email });
-
-  if (existingUser) {
-    throw new Error('User already exists');
-  }
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  const newUser = new UserModel({
+class AuthService {
+  public async registerUser({
     name,
     email,
-    password: hashedPassword,
+    password,
     address,
-  });
+  }: RegisterUserDto) {
+    const existingUser = await UserModel.findOne({ email });
 
-  await newUser.save();
+    if (existingUser) {
+      throw new Error('User already exists');
+    }
 
-  return { message: 'User registered successfully' };
-};
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-export const loginUser = async ({ email, password }: LoginUserDto) => {
-  const user = await UserModel.findOne({ email });
+    const newUser = new UserModel({
+      name,
+      email,
+      password: hashedPassword,
+      address,
+    });
 
-  if (!user) {
-    throw new Error('Invalid credentials');
+    await newUser.save();
+
+    return { message: 'User registered successfully' };
   }
 
-  const isMatch = await bcrypt.compare(password, user.password);
+  public async loginUser({ email, password }: LoginUserDto) {
+    const user = await UserModel.findOne({ email });
 
-  if (!isMatch) {
-    throw new Error('Invalid credentials');
+    if (!user) {
+      throw new Error('Invalid credentials');
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      throw new Error('Invalid credentials');
+    }
+
+    const payload: JwtPayloadT = { id: user._id, name: user.name };
+
+    // access token
+    const token = jwt.sign(payload, env.JWT_SECRET, {
+      expiresIn: env.JWT_EXPIRES_IN,
+    });
+
+    // refresh token
+    const refreshToken = jwt.sign(payload, env.JWT_REFRESH_SECRET, {
+      expiresIn: env.JWT_REFRESH_EXPIRES_IN,
+    });
+
+    return { token, refreshToken };
   }
 
-  const payload: JwtPayloadT = { id: user._id, name: user.name };
-
-  // access token
-  const token = jwt.sign(payload, env.JWT_SECRET, {
-    expiresIn: env.JWT_EXPIRES_IN,
-  });
-
-  // refresh token
-  const refreshToken = jwt.sign(payload, env.JWT_REFRESH_SECRET, {
-    expiresIn: env.JWT_REFRESH_EXPIRES_IN,
-  });
-
-  return { token, refreshToken };
-};
-
-export async function updatePassword(id: string, password: string) {
-  const user = await UserModel.findOne({ _id: id });
-
-  if (!user) {
-    throw new Error('User not found');
-  }
-
-  user.password = await bcrypt.hash(password, 10);
-  await UserModel.updateOne({ _id: id }, user);
-  return { message: 'Password updated successfully' };
-}
-
-export async function RefreshToken(token: string) {
-  try {
-    const payload = jwt.verify(token, env.JWT_REFRESH_SECRET) as DecodedTokenT;
-    const user = await UserModel.findOne<User>({ _id: payload.id });
+  public async updatePassword(id: string, password: string) {
+    const user = await UserModel.findOne({ _id: id });
 
     if (!user) {
       throw new Error('User not found');
     }
 
-    const newPayload = { id: user._id, name: user.name };
+    user.password = await bcrypt.hash(password, 10);
+    await UserModel.updateOne({ _id: id }, user);
+    return { message: 'Password updated successfully' };
+  }
 
-    const newToken = jwt.sign(newPayload, env.JWT_SECRET, {
-      expiresIn: env.JWT_EXPIRES_IN,
-    });
+  public async RefreshToken(token: string) {
+    try {
+      const payload = jwt.verify(
+        token,
+        env.JWT_REFRESH_SECRET,
+      ) as DecodedTokenT;
+      const user = await UserModel.findOne<User>({ _id: payload.id });
 
-    const newRefreshToken = jwt.sign(newPayload, env.JWT_REFRESH_SECRET, {
-      expiresIn: env.JWT_REFRESH_EXPIRES_IN,
-    });
+      if (!user) {
+        throw new Error('User not found');
+      }
 
-    return { token: newToken, refreshToken: newRefreshToken };
-  } catch (error) {
-    throw new Error('Invalid token');
+      const newPayload = { id: user._id, name: user.name };
+
+      const newToken = jwt.sign(newPayload, env.JWT_SECRET, {
+        expiresIn: env.JWT_EXPIRES_IN,
+      });
+
+      const newRefreshToken = jwt.sign(newPayload, env.JWT_REFRESH_SECRET, {
+        expiresIn: env.JWT_REFRESH_EXPIRES_IN,
+      });
+
+      return { token: newToken, refreshToken: newRefreshToken };
+    } catch (error) {
+      throw new Error('Invalid token');
+    }
   }
 }
+
+export default new AuthService();
