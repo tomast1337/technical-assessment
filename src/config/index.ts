@@ -1,5 +1,11 @@
 import { plainToClass } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsString, validateSync } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  validateSync,
+} from 'class-validator';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -31,7 +37,8 @@ export class Environment {
 
   @IsString()
   @IsNotEmpty()
-  NODE_ENV: string;
+  @IsEnum(['development', 'production', 'test'])
+  NODE_ENV: 'development' | 'production' | 'test';
 
   @IsString()
   @IsNotEmpty()
