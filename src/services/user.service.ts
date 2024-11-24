@@ -38,8 +38,11 @@ class UserService {
 
   async getUsers(query: PagingDto) {
     const { page = 1, limit = 10, order, shortBy } = query;
-    const sort = {};
-    sort[shortBy] = order ? 1 : -1;
+    const sort = {} as any;
+
+    if (shortBy) {
+      sort[shortBy] = order ? 1 : -1;
+    }
 
     const users = await UserModel.find()
       .sort(sort)
