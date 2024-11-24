@@ -55,7 +55,7 @@ describe('Auth E2E', () => {
     await session.abortTransaction();
   });
 
-  describe('registerUser', () => {
+  describe('/auth/register', () => {
     it('should register a new user', async () => {
         const name = faker.person.firstName();
         const email = faker.internet.email();
@@ -103,7 +103,7 @@ describe('Auth E2E', () => {
     });
   });
 
-  describe('loginUser', () => {
+  describe('/auth/login', () => {
     it('should login a user and return a token and refresh token', async () => {
         const name = faker.person.firstName();
         const email = faker.internet.email();
@@ -141,7 +141,7 @@ describe('Auth E2E', () => {
     });
   });
 
-  describe('updatePassword', () => {
+  describe('/auth/update-password/', () => {
     it('should update the user password', async () => {
         const name = faker.person.firstName();
         const email = faker.internet.email();
