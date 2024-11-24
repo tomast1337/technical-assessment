@@ -1,7 +1,8 @@
+import 'reflect-metadata';
 import { Prop, Ref, modelOptions, pre } from '@typegoose/typegoose';
-import { Types } from 'mongoose'; // Import Types from mongoose
+import { Types } from 'mongoose';
 
-import { User } from './user.model'; // Adjust the path as necessary
+import { User } from './user.model';
 
 import { UserModel } from '.';
 
@@ -9,7 +10,7 @@ import { UserModel } from '.';
   const region = this as Omit<any, keyof Region> & Region;
 
   if (!region._id) {
-    region._id = new Types.ObjectId().toString(); // Use Types.ObjectId
+    region._id = new Types.ObjectId().toString();
   }
 
   if (region.isNew) {
