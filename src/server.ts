@@ -1,13 +1,14 @@
+import cookieParser from 'cookie-parser';
+import express, { Router, json } from 'express';
+import { StatusCodes } from 'http-status-codes';
+import morgan from 'morgan';
+import swaggerJsdoc from 'swagger-jsdoc';
+import * as swaggerUi from 'swagger-ui-express';
+
 import { env } from '@config/index';
 import { authRouter } from '@controllers/auth.controller';
 import { regionRouter } from '@controllers/region.controller';
 import { userRouter } from '@controllers/user.controller';
-import * as cookieParser from 'cookie-parser';
-import * as express from 'express';
-import { StatusCodes } from 'http-status-codes';
-import * as morgan from 'morgan';
-import * as swaggerJsdoc from 'swagger-jsdoc';
-import * as swaggerUi from 'swagger-ui-express';
 
 import passport from './auth/passaport';
 import logger from './logger';
@@ -17,7 +18,7 @@ const loggerLocal = logger.child({ label: 'app' });
 loggerLocal.info('Starting server...');
 
 const app = express();
-const router = express.Router();
+const router = Router();
 const port = env.PORT;
 
 const specs = swaggerJsdoc(swaggerConfig);
@@ -38,7 +39,7 @@ app.use(
 app.use(cookieParser());
 
 app.use(
-  express.json({
+  json({
     limit: '50mb',
   }),
 );
@@ -75,7 +76,7 @@ router.use('/', (req, res) => {
   res.send('Welcome to the API');
 });
 
-app.use((req, res, next) => {
+app.use((req, res, _next) => {
   res.status(StatusCodes.NOT_FOUND).json({ message: 'Not Found' });
 });
 
