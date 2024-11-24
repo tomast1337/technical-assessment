@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import {
   ArrayMinSize,
   IsArray,
