@@ -21,6 +21,18 @@ import { UserModel } from '.';
     }
   }
 
+  // the last item in the coordinates array should be the same as the first
+  region.coordinates = region.coordinates.map((coordinate) => {
+    if (
+      coordinate[0][0] !== coordinate[coordinate.length - 1][0] ||
+      coordinate[0][1] !== coordinate[coordinate.length - 1][1]
+    ) {
+      coordinate.push(coordinate[0]);
+    }
+
+    return coordinate;
+  });
+
   next(region.validateSync());
 })
 @modelOptions({ schemaOptions: { validateBeforeSave: false } })
