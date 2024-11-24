@@ -1,13 +1,14 @@
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 
+import lib from '@app/lib';
 import { env } from '@config/index';
 import { UserModel } from '@models/index';
 import { User } from '@models/user.model';
 import { LoginUserDto } from '@views/LoginUser.dto';
 import { RegisterUserDto } from '@views/RegisterUser.dto';
 
-export type JwtPayloadT = {
+type JwtPayloadT = {
   id: string;
   name: string;
 };
@@ -19,6 +20,7 @@ class AuthService {
     email,
     password,
     address,
+    coordinates,
   }: RegisterUserDto) {
     const existingUser = await UserModel.findOne({ email });
 
@@ -26,16 +28,36 @@ class AuthService {
       throw new Error('User already exists');
     }
 
+    // should be address or coordinates and not both
+    if (address && coordinates) {
+      throw new Error('Either address or coordinates should be provided');
+    }
+
+    if (coordinates) {
+      address = await lib.getAddressFromCoordinates(coordinates);
+    }
+
+    if (!address) {
+      throw new Error('Address is required');
+    }
+
+    if (coordinates) {
+      address = await lib.getAddressFromCoordinates(coordinates);
+    }
+
+    if (!address) {
+      throw new Error('Invalid coordinates');
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = new UserModel({
+    await UserModel.create({
       name,
       email,
       password: hashedPassword,
       address,
+      coordinates,
     });
-
-    await newUser.save();
 
     return { message: 'User registered successfully' };
   }

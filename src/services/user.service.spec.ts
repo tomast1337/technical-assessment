@@ -1,163 +1,151 @@
-import { faker } from '@faker-js/faker';
-import { UserModel } from '@models/index';
-import { PagingDto } from '@views/Paging.dto';
 import { expect } from 'chai';
-import * as mongoose from 'mongoose';
-import * as sinon from 'sinon';
+import sinon from 'sinon';
 
-import '../database';
-import GeoLib from '../lib';
+import { UserModel } from '@models/index';
+import { User } from '@models/user.model';
+
 import UserService from './user.service';
+import { PagingDto } from '../views/Paging.dto';
 
-const { deleteUser, getUserById, getUsers, updateUser } = UserService;
+describe('UserService', () => {
+  let findByIdStub: sinon.SinonStub;
+  let findByIdAndUpdateStub: sinon.SinonStub;
+  let findByIdAndDeleteStub: sinon.SinonStub;
+  let findStub: sinon.SinonStub;
 
-describe('User Service', () => {
-  let session;
-  let sandbox: sinon.SinonSandbox;
-  const geoLibStub: Partial<typeof GeoLib> = {};
+  beforeEach(() => {
+    findByIdStub = sinon.stub(UserModel, 'findById').returns({
+      select: sinon.stub().resolves({ _id: 'userId', name: 'John Doe' }),
+    } as any);
 
-  before(async () => {
-    sandbox = sinon.createSandbox();
-    session = await mongoose.startSession();
+    findByIdAndUpdateStub = sinon.stub(UserModel, 'findByIdAndUpdate').returns({
+      select: sinon.stub().resolves({ _id: 'userId', name: 'Updated Name' }),
+    } as any);
 
-    // Mock GeoLib methods
-    geoLibStub.getAddressFromCoordinates = sinon
-      .stub(GeoLib, 'getAddressFromCoordinates')
-      .resolves(faker.location.streetAddress({ useFullAddress: true }));
-
-    geoLibStub.getCoordinatesFromAddress = sinon
-      .stub(GeoLib, 'getCoordinatesFromAddress')
+    findByIdAndDeleteStub = sinon
+      .stub(UserModel, 'findByIdAndDelete')
       .resolves({
-        lat: faker.location.latitude(),
-        lng: faker.location.longitude(),
+        _id: 'userId',
+        name: 'John Doe',
       });
+
+    findStub = sinon.stub(UserModel, 'find').returns({
+      sort: sinon.stub().returnsThis(),
+      skip: sinon.stub().returnsThis(),
+      limit: sinon.stub().returnsThis(),
+      select: sinon.stub().resolves([{ _id: 'userId', name: 'John Doe' }]),
+    } as any);
   });
 
-  after(async () => {
+  afterEach(() => {
     sinon.restore();
-    await session.endSession();
-    await mongoose.disconnect();
-  });
-
-  beforeEach(async () => {
-    await session.startTransaction();
-  });
-
-  afterEach(async () => {
-    await UserModel.deleteMany({});
-    await session.abortTransaction();
   });
 
   describe('getUserById', () => {
-    it('should return a user by ID', async () => {
-      const user = await UserModel.create({
-        name: faker.person.firstName(),
-        email: faker.internet.email(),
-        password: faker.internet.password(),
-        address: faker.location.streetAddress(),
-        coordinates: [faker.location.longitude(), faker.location.latitude()],
-      });
+    it('should return a user if found', async () => {
+      const user = { _id: 'userId', name: 'John Doe' };
 
-      const foundUser = await getUserById(user, user._id.toString());
-      expect(foundUser).to.exist;
-      expect(foundUser._id.toString()).to.equal(user._id.toString());
+      findByIdStub.returns({
+        select: sinon.stub().resolves(user),
+      } as any);
+
+      const result = await UserService.getUserById(user as User, 'userId');
+
+      expect(result).to.deep.equal(user);
+      expect(findByIdStub.calledOnce).to.be.true;
     });
 
     it('should throw an error if the user is not found', async () => {
+      findByIdStub.returns({
+        select: sinon.stub().resolves(null),
+      } as any);
+
       try {
-        await getUserById(null, faker.string.alphanumeric(10));
+        await UserService.getUserById({} as User, 'userId');
       } catch (error) {
-        expect(error).to.have.property('message', 'User not found');
+        expect((error as any).message).to.equal('User not found');
       }
+
+      expect(findByIdStub.calledOnce).to.be.true;
     });
   });
 
   describe('updateUser', () => {
-    it('should update a user by ID', async () => {
-      const user = await UserModel.create({
-        name: faker.person.firstName(),
-        email: faker.internet.email(),
-        password: faker.internet.password(),
-        address: faker.location.streetAddress(),
-        coordinates: [faker.location.longitude(), faker.location.latitude()],
-      });
+    it('should update a user if found', async () => {
+      const updateData = { name: 'Updated Name' };
+      const updatedUser = { _id: 'userId', ...updateData };
 
-      const updateData = { name: faker.person.firstName() };
+      findByIdAndUpdateStub.returns({
+        select: sinon.stub().resolves(updatedUser),
+      } as any);
 
-      const updatedUser = await updateUser(
-        user,
-        user._id.toString(),
+      const result = await UserService.updateUser(
+        {} as User,
+        'userId',
         updateData,
       );
 
-      expect(updatedUser).to.exist;
-      expect(updatedUser.name).to.equal(updateData.name);
+      expect(result).to.deep.equal(updatedUser);
+      expect(findByIdAndUpdateStub.calledOnce).to.be.true;
     });
 
     it('should throw an error if the user is not found', async () => {
+      findByIdAndUpdateStub.returns({
+        select: sinon.stub().resolves(null),
+      } as any);
+
       try {
-        await updateUser(null, faker.string.alphanumeric(10), {
-          name: faker.person.firstName(),
+        await UserService.updateUser({} as User, 'userId', {
+          name: 'Updated Name',
         });
       } catch (error) {
-        expect(error).to.have.property('message', 'User not found');
+        expect((error as any).message).to.equal('User not found');
       }
+
+      expect(findByIdAndUpdateStub.calledOnce).to.be.true;
     });
   });
 
   describe('deleteUser', () => {
-    it('should delete a user by ID', async () => {
-      const user = await UserModel.create({
-        name: faker.person.firstName(),
-        email: faker.internet.email(),
-        password: faker.internet.password(),
-        address: faker.location.streetAddress(),
-        coordinates: [faker.location.longitude(), faker.location.latitude()],
-      });
+    it('should delete a user if found', async () => {
+      const user = { _id: 'userId', name: 'John Doe' };
+      findByIdAndDeleteStub.resolves(user);
 
-      const deletedUser = await deleteUser(user, user._id.toString());
-      expect(deletedUser).to.exist;
-      expect(deletedUser._id.toString()).to.equal(user._id.toString());
+      const result = await UserService.deleteUser({} as User, 'userId');
+
+      expect(result).to.deep.equal(user);
+      expect(findByIdAndDeleteStub.calledOnce).to.be.true;
     });
 
     it('should throw an error if the user is not found', async () => {
+      findByIdAndDeleteStub.resolves(null);
+
       try {
-        await deleteUser(null, faker.string.alphanumeric(10));
+        await UserService.deleteUser({} as User, 'userId');
       } catch (error) {
-        expect(error).to.have.property('message', 'User not found');
+        expect((error as any).message).to.equal('User not found');
       }
+
+      expect(findByIdAndDeleteStub.calledOnce).to.be.true;
     });
   });
 
   describe('getUsers', () => {
-    it('should return a list of users with pagination', async () => {
-      const users = await UserModel.insertMany([
-        {
-          name: faker.person.firstName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(),
-          address: faker.location.streetAddress(),
-          coordinates: [faker.location.longitude(), faker.location.latitude()],
-        },
-        {
-          name: faker.person.firstName(),
-          email: faker.internet.email(),
-          password: faker.internet.password(),
-          address: faker.location.streetAddress(),
-          coordinates: [faker.location.longitude(), faker.location.latitude()],
-        },
-      ]);
+    it('should return a list of users', async () => {
+      const users = [{ _id: 'userId', name: 'John Doe' }];
 
-      const query: PagingDto = {
-        page: 1,
-        limit: 1,
-        order: true,
-        shortBy: 'name',
-      };
+      findStub.returns({
+        sort: sinon.stub().returnsThis(),
+        skip: sinon.stub().returnsThis(),
+        limit: sinon.stub().returnsThis(),
+        select: sinon.stub().resolves(users),
+      } as any);
 
-      const result = await getUsers(query);
-      expect(result).to.have.lengthOf(1);
-      expect(result[0]._id.toString()).to.equal(users[0]._id.toString());
+      const query: PagingDto = { page: 1, limit: 10 };
+      const result = await UserService.getUsers(query);
+
+      expect(result).to.deep.equal(users);
+      expect(findStub.calledOnce).to.be.true;
     });
   });
 });
