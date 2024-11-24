@@ -1,19 +1,21 @@
 import { faker } from '@faker-js/faker';
-import { UserModel } from '@models/index';
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import * as bcrypt from 'bcryptjs';
 import { expect } from 'chai';
 import * as mongoose from 'mongoose';
-import * as sinon from 'sinon';
+import { SinonSandbox, createSandbox, restore, stub } from 'sinon';
+
+import { UserModel } from '@models/index';
 
 import '../database';
 import GeoLib from '../lib';
+
 import '../server';
 
 describe('Auth E2E', () => {
-  let axiosInstance;
-  let session;
-  let sandbox: sinon.SinonSandbox;
+  let axiosInstance: AxiosInstance;
+  let session: mongoose.ClientSession;
+  let _sandbox: SinonSandbox;
   const geoLibStub: Partial<typeof GeoLib> = {};
 
   before(async () => {
@@ -24,24 +26,26 @@ describe('Auth E2E', () => {
       },
     });
 
-    sandbox = sinon.createSandbox();
+    _sandbox = createSandbox();
     session = await mongoose.startSession();
 
     // Mock GeoLib methods
-    geoLibStub.getAddressFromCoordinates = sinon
-      .stub(GeoLib, 'getAddressFromCoordinates')
-      .resolves(faker.location.streetAddress({ useFullAddress: true }));
+    geoLibStub.getAddressFromCoordinates = stub(
+      GeoLib,
+      'getAddressFromCoordinates',
+    ).resolves(faker.location.streetAddress({ useFullAddress: true }));
 
-    geoLibStub.getCoordinatesFromAddress = sinon
-      .stub(GeoLib, 'getCoordinatesFromAddress')
-      .resolves({
-        lat: faker.location.latitude(),
-        lng: faker.location.longitude(),
-      });
+    geoLibStub.getCoordinatesFromAddress = stub(
+      GeoLib,
+      'getCoordinatesFromAddress',
+    ).resolves({
+      lat: faker.location.latitude(),
+      lng: faker.location.longitude(),
+    });
   });
 
   after(async () => {
-    sinon.restore();
+    restore();
     await session.endSession();
   });
 
@@ -95,7 +99,7 @@ describe('Auth E2E', () => {
           address,
         });
       } catch (error) {
-        expect(error.response.data).to.have.property(
+        expect((error as any).response.data).to.have.property(
           'message',
           'User already exists',
         );
@@ -136,7 +140,7 @@ describe('Auth E2E', () => {
           password,
         });
       } catch (error) {
-        expect(error.response.data).to.have.property(
+        expect((error as any).response.data).to.have.property(
           'message',
           'Invalid credentials',
         );
@@ -193,7 +197,7 @@ describe('Auth E2E', () => {
           password,
         });
       } catch (error) {
-        expect(error.response.data).to.have.property(
+        expect((error as any).response.data).to.have.property(
           'message',
           'Invalid credentials',
         );
