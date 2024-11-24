@@ -1,4 +1,4 @@
-import { IsInt, IsOptional, IsString, Min, IsBoolean } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsString, Min } from 'class-validator';
 
 export class PagingDto {
   @IsInt()

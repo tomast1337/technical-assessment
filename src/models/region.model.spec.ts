@@ -1,11 +1,12 @@
 import 'reflect-metadata';
 
+import { faker } from '@faker-js/faker';
 import { expect } from 'chai';
 import * as mongoose from 'mongoose';
 import * as sinon from 'sinon';
 
-import { faker } from '@faker-js/faker';
 import { RegionModel, UserModel } from '.';
+
 import '../database';
 import GeoLib from '../lib';
 import '../server';
@@ -73,6 +74,7 @@ describe('Region model', () => {
     expect(foundRegion!._id.toString()).to.be.a('string');
     expect(foundRegion).to.have.property('name', name);
   });
+
   it('should use the provided _id if specified', async () => {
     const name = faker.location.city();
     const _id = new mongoose.Types.ObjectId().toString();
@@ -95,8 +97,10 @@ describe('Region model', () => {
     expect(foundRegion!._id.toString()).to.equal(_id);
     expect(foundRegion).to.have.property('name', name);
   });
+
   it("should add the region to the user's regions array", async () => {
     const name = faker.location.city();
+
     const coordinates: [number, number][][] = [
       [
         [10, 20],
@@ -104,6 +108,7 @@ describe('Region model', () => {
         [50, 60],
       ],
     ];
+
     const user = await UserModel.create({
       name: faker.person.firstName(),
       email: faker.internet.email(),
@@ -120,8 +125,10 @@ describe('Region model', () => {
     expect(foundUser).to.exist;
     expect(foundUser!.regions).to.include(regionInstance._id);
   });
+
   it("should add the region to the user's regions array", async () => {
     const name = faker.location.city();
+
     const coordinates: [number, number][][] = [
       [
         [10, 20],
@@ -129,6 +136,7 @@ describe('Region model', () => {
         [50, 60],
       ],
     ];
+
     const user = await UserModel.create({
       name: faker.person.firstName(),
       email: faker.internet.email(),

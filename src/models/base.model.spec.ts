@@ -7,6 +7,7 @@ import * as sinon from 'sinon';
 import '../database';
 import '../server';
 import { Base } from './base.model';
+
 import { Prop, getModelForClass } from '@typegoose/typegoose';
 import { faker } from '@faker-js/faker';
 

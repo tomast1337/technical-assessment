@@ -4,6 +4,7 @@ import { regionRouter } from '@controllers/region.controller';
 import { userRouter } from '@controllers/user.controller';
 import * as cookieParser from 'cookie-parser';
 import * as express from 'express';
+import { StatusCodes } from 'http-status-codes';
 import * as morgan from 'morgan';
 import * as swaggerJsdoc from 'swagger-jsdoc';
 import * as swaggerUi from 'swagger-ui-express';
@@ -11,7 +12,6 @@ import * as swaggerUi from 'swagger-ui-express';
 import passport from './auth/passaport';
 import logger from './logger';
 import { swaggerConfig } from './swaggerConfig';
-import { StatusCodes } from 'http-status-codes';
 
 const loggerLocal = logger.child({ label: 'app' });
 loggerLocal.info('Starting server...');
@@ -36,25 +36,30 @@ app.use(
 );
 
 app.use(cookieParser());
+
 app.use(
   express.json({
     limit: '50mb',
   }),
 );
+
 app.use(passport.initialize());
 app.use('/api', router);
 
 router.use('/auth', authRouter);
+
 router.use(
   '/user',
   passport.authenticate('jwt', { session: false }),
   userRouter,
 );
+
 router.use(
   '/region',
   passport.authenticate('jwt', { session: false }),
   regionRouter,
 );
+
 app.use(
   '/api-docs',
   swaggerUi.serve,

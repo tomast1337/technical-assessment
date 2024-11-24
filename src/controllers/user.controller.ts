@@ -1,6 +1,3 @@
-import { Request, Response, Router } from 'express';
-import * as passport from 'passport';
-
 import {
   validationBodyMiddleware,
   validationQueryMiddleware,
@@ -9,7 +6,10 @@ import { User } from '@models/user.model';
 import UserService from '@services/user.service';
 import { PagingDto } from '@views/Paging.dto';
 import { UpdateUserDto } from '@views/UpdateUser.dto';
+import { Request, Response, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import * as passport from 'passport';
+
 const { deleteUser, getUserById, getUsers, updateUser } = UserService;
 
 export const userRouter = Router();
@@ -58,6 +58,7 @@ userRouter.get(
   async (req: Request, res: Response) => {
     const user = req.user as User;
     const id = user._id;
+
     try {
       const foundUser = await getUserById(user, id);
       res.status(StatusCodes.OK).json(foundUser);
@@ -104,6 +105,7 @@ userRouter.put(
     const user = req.user as User;
     const id = user._id;
     const body = req.body as UpdateUserDto;
+
     try {
       const updatedUser = await updateUser(user, id, body);
       res.status(StatusCodes.OK).json(updatedUser);
@@ -133,6 +135,7 @@ userRouter.delete(
   async (req: Request, res: Response) => {
     const user = req.user as User;
     const id = user._id;
+
     try {
       await deleteUser(user, id);
       res.status(StatusCodes.OK).json({ message: 'User deleted successfully' });
@@ -208,6 +211,7 @@ userRouter.get(
   validationQueryMiddleware(PagingDto),
   async (req: Request, res: Response) => {
     const query = req.query as unknown as PagingDto;
+
     try {
       const users = await getUsers(query);
       res.status(StatusCodes.OK).json(users);

@@ -6,9 +6,11 @@ import * as sinon from 'sinon';
 
 import '../database';
 import '../server';
-import { fa, faker } from '@faker-js/faker';
-import { UserModel } from '.';
+import { faker } from '@faker-js/faker';
+
 import GeoLib from '../lib';
+
+import { UserModel } from '.';
 
 describe('User model', () => {
   let user;
@@ -26,6 +28,7 @@ describe('User model', () => {
         lat: faker.location.latitude(),
         lng: faker.location.longitude(),
       });
+
     session = await mongoose.startSession();
   });
 
@@ -84,9 +87,11 @@ describe('User model', () => {
     const password = faker.internet.password();
     const address = faker.location.streetAddress({ useFullAddress: true });
     const user = await UserModel.create({ name, email, password, address });
+
     await UserModel.deleteOne({
       _id: user._id,
     });
+
     const foundUser = await UserModel.findOne({ name });
     expect(foundUser).to.be.null;
   });

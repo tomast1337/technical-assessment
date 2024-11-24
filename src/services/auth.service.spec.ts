@@ -11,6 +11,7 @@ import '../server';
 import AuthService from './auth.service';
 
 const { registerUser, loginUser, updatePassword } = AuthService;
+
 describe('Auth Service', () => {
   let session;
   let sandbox: sinon.SinonSandbox;
@@ -19,6 +20,7 @@ describe('Auth Service', () => {
   before(async () => {
     sandbox = sinon.createSandbox();
     session = await mongoose.startSession();
+
     // Mock GeoLib methods
     geoLibStub.getAddressFromCoordinates = sinon
       .stub(GeoLib, 'getAddressFromCoordinates')
