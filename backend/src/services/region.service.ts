@@ -1,11 +1,17 @@
+<<<<<<< HEAD
 import logger from '@app/logger';
 import { PageDto } from '@app/views/Page.dto';
+=======
+import { Types } from 'mongoose';
+
+>>>>>>> 39916c9 (Moved the backend to the backend folder)
 import { PagingDto } from '@app/views/Paging.dto';
 import { RegionModel } from '@models/index';
 import { RegionDto } from '@views/Region.dto';
 
 class RegionService {
   async createRegion(userId: string, createRegionDto: RegionDto) {
+<<<<<<< HEAD
     try {
       const data = {
         name: createRegionDto.name,
@@ -22,6 +28,14 @@ class RegionService {
     } catch (error) {
       throw new Error('Failed to create region');
     }
+=======
+    const createdRegion = await RegionModel.create({
+      ...createRegionDto,
+      user: new Types.ObjectId(userId),
+    });
+
+    return createdRegion;
+>>>>>>> 39916c9 (Moved the backend to the backend folder)
   }
 
   async getRegionById(userId: string, regionId: string) {
@@ -39,6 +53,7 @@ class RegionService {
     regionId: string,
     updateRegionDto: RegionDto,
   ) {
+<<<<<<< HEAD
     try {
       const region = await RegionModel.findOneAndUpdate(
         { _id: regionId, user: userId },
@@ -55,6 +70,19 @@ class RegionService {
       logger.error('Error in updateRegion:', error);
       throw new Error((error as any).message || 'Failed to update region');
     }
+=======
+    const region = await RegionModel.findOneAndUpdate(
+      { _id: regionId, user: userId },
+      updateRegionDto,
+      { new: true },
+    );
+
+    if (!region) {
+      throw new Error('Region not found or not authorized');
+    }
+
+    return region;
+>>>>>>> 39916c9 (Moved the backend to the backend folder)
   }
 
   async deleteRegion(userId: string, regionId: string) {
@@ -78,6 +106,7 @@ class RegionService {
       sort[shortBy] = order ? 1 : -1;
     }
 
+<<<<<<< HEAD
     try {
       const regions = await RegionModel.find({ user: userId })
         .sort(sort)
@@ -130,6 +159,12 @@ class RegionService {
     }
 
     const regions = await RegionModel.find(query);
+=======
+    const regions = await RegionModel.find({ user: userId })
+      .sort(sort)
+      .skip((page - 1) * limit)
+      .limit(limit);
+>>>>>>> 39916c9 (Moved the backend to the backend folder)
 
     return regions;
   }

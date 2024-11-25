@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 services:
   mongo1:
     container_name: oz-tech-map-prod-mongo1
@@ -73,3 +74,21 @@ volumes:
 networks:
   app-network:
     driver: bridge
+=======
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: oz-tech-test-mongo
+    ports:
+      - "27021:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
+>>>>>>> 39916c9 (Moved the backend to the backend folder)
