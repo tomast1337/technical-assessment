@@ -1,5 +1,6 @@
 import { Types } from 'mongoose';
 
+import { PagingDto } from '@app/views/Paging.dto';
 import { RegionModel } from '@models/index';
 import { RegionDto } from '@views/Region.dto';
 
@@ -54,8 +55,20 @@ class RegionService {
     return region;
   }
 
-  async getRegions(userId: string) {
-    return await RegionModel.find({ user: userId });
+  async getRegions(userId: string, query: PagingDto) {
+    const { page = 1, limit = 10, order, shortBy } = query;
+    const sort = {} as any;
+
+    if (shortBy) {
+      sort[shortBy] = order ? 1 : -1;
+    }
+
+    const regions = await RegionModel.find({ user: userId })
+      .sort(sort)
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    return regions;
   }
 }
 
