@@ -1,4 +1,6 @@
+import 'reflect-metadata';
 import { expect } from 'chai';
+import { Type } from 'class-transformer';
 import { IsBoolean, IsInt, IsOptional, IsString, Min } from 'class-validator';
 import { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
@@ -12,10 +14,12 @@ import {
 class TestDto {
   @IsInt()
   @Min(1)
+  @Type(() => Number)
   page: number;
 
   @IsInt()
   @Min(1)
+  @Type(() => Number)
   limit: number;
 
   @IsOptional()
@@ -24,6 +28,7 @@ class TestDto {
 
   @IsOptional()
   @IsBoolean()
+  @Type(() => Boolean)
   order?: boolean;
 }
 
