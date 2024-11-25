@@ -1,20 +1,7 @@
 import { createLogger, format, transports } from 'winston';
 
-import { env } from './config';
-
-const getLevel = (env: 'development' | 'test' | 'production') => {
-  switch (env) {
-    case 'development':
-      return 'debug';
-    case 'test':
-      return 'error';
-    default:
-      return 'info';
-  }
-};
-
 const logger = createLogger({
-  level: getLevel(env.NODE_ENV),
+  level: 'debug',
   format: format.combine(
     format.colorize(),
     format.timestamp(),
