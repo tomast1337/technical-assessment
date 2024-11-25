@@ -2,7 +2,11 @@ import { Request, Response, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import passport from 'passport';
 
-import { validationBodyMiddleware } from '@middlewares/validationMiddleware';
+import { PagingDto } from '@app/views/Paging.dto';
+import {
+  validationBodyMiddleware,
+  validationQueryMiddleware,
+} from '@middlewares/validationMiddleware';
 import RegionService from '@services/region.service';
 import { RegionDto } from '@views/Region.dto';
 
@@ -215,6 +219,33 @@ regionRouter.delete(
  *     tags: [Region]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         required: true
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         required: true
+ *         description: Number of items per page
+ *       - in: query
+ *         name: shortBy
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Field to sort by
+ *       - in: query
+ *         name: order
+ *         schema:
+ *           type: boolean
+ *         required: false
+ *         description: Sort order (true for ascending, false for descending)
  *     responses:
  *       200:
  *         description: A list of regions
@@ -241,11 +272,13 @@ regionRouter.delete(
 regionRouter.get(
   '/',
   passport.authenticate('jwt', { session: false }),
+  validationQueryMiddleware(PagingDto),
   async (req: Request, res: Response) => {
     const user = req.user as { _id: string };
+    const query = req.query as unknown as PagingDto;
 
     try {
-      const regions = await getRegions(user._id);
+      const regions = await getRegions(user._id, query);
       res.status(StatusCodes.OK).json(regions);
     } catch (error) {
       res
