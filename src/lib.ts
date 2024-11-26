@@ -1,4 +1,4 @@
-import { Client } from '@googlemaps/google-maps-services-js';
+import googleMapsClient, { Client } from '@googlemaps/google-maps-services-js';
 
 import { env } from './config';
 import logger from './logger';
@@ -14,8 +14,8 @@ class GeoLib {
   private apiKey: string;
 
   constructor() {
-    this.client = new Client({});
     this.apiKey = env.GOOGLE_MAPS_API_KEY;
+    this.client = new Client({});
   }
 
   public async getAddressFromCoordinates(
