@@ -14,22 +14,26 @@ import { UserModel } from '.';
   }
 
   if (region.isNew) {
-    const user = await UserModel.findOne({ _id: region.user });
+    const session = region.$session();
+    const user = await UserModel.findOne({ _id: region.user }).session(session);
     if (user) {
       user.regions.push(region._id);
-      await user.save({ session: region.$session() });
+      await user.save({ session });
+    } else {
+      throw new Error('User not found');
     }
   }
 
   next(region.validateSync());
 })
-@modelOptions({ schemaOptions: { validateBeforeSave: false } })
+@modelOptions({ schemaOptions: { validateBeforeSave: true } })
 export class Region {
   @Prop({ required: true })
   name!: string;
 
+  // Array of coordinates eg. [[10, 20], [30, 40], [50, 60], [10, 20]]
   @Prop({ required: true, type: () => [[Number]] })
-  coordinates: [number, number][][];
+  coordinates: [number, number][];
 
   @Prop({ ref: () => User, required: true, type: () => String })
   user: Ref<User>;
