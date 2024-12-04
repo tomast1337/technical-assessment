@@ -1,16 +1,79 @@
 version: '3.8'
-
 services:
-  mongo:
+  mongo1:
     image: mongo:latest
-    container_name: oz-tech-test-mongo
+    container_name: mongo1
     ports:
-      - '27021:27017'
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
+      - '27017:27017'
     volumes:
-      - mongo-data:/data/db
+      - mongo1-data:/data/db
+      - ./config/mongodb-keyfile:/etc/mongodb-keyfile
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=adminUser
+      - MONGO_INITDB_ROOT_PASSWORD=strongPassword
+    command: >
+      bash -c "
+        chmod 400 /etc/mongodb-keyfile
+        mongod 
+        --replSet rs0 
+        --bind_ip 0.0.0.0 
+        --keyFile /etc/mongodb-keyfile 
+        --auth
+      "
+    networks:
+      - mongodb_network
+
+  mongo2:
+    image: mongo:latest
+    container_name: mongo2
+    ports:
+      - '27018:27017'
+    volumes:
+      - mongo2-data:/data/db
+      - ./config/mongodb-keyfile:/etc/mongodb-keyfile
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=adminUser
+      - MONGO_INITDB_ROOT_PASSWORD=strongPassword
+    command: >
+      bash -c "
+        chmod 400 /etc/mongodb-keyfile
+        mongod 
+        --replSet rs0 
+        --bind_ip 0.0.0.0 
+        --keyFile /etc/mongodb-keyfile 
+        --auth
+      "
+    networks:
+      - mongodb_network
+
+  mongo3:
+    image: mongo:latest
+    container_name: mongo3
+    ports:
+      - '27019:27017'
+    volumes:
+      - mongo3-data:/data/db
+      - ./config/mongodb-keyfile:/etc/mongodb-keyfile
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=adminUser
+      - MONGO_INITDB_ROOT_PASSWORD=strongPassword
+    command: >
+      bash -c "
+        chmod 400 /etc/mongodb-keyfile
+        mongod 
+        --replSet rs0 
+        --bind_ip 0.0.0.0 
+        --keyFile /etc/mongodb-keyfile 
+        --auth
+      "
+    networks:
+      - mongodb_network
 
 volumes:
-  mongo-data:
+  mongo1-data:
+  mongo2-data:
+  mongo3-data:
+
+networks:
+  mongodb_network:
+    driver: bridge
