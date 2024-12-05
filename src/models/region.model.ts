@@ -1,16 +1,34 @@
 import 'reflect-metadata';
-import { Prop, Ref, modelOptions, pre } from '@typegoose/typegoose';
+import { Prop, Ref, index, modelOptions, pre } from '@typegoose/typegoose';
 import { Types } from 'mongoose';
 
 import { User } from './user.model';
 
 import { UserModel } from '.';
 
+class Geometry {
+  @Prop({ required: true, enum: ['Polygon'] })
+  type!: string;
+
+  @Prop({ required: true, type: [[[Number]]] })
+  coordinates!: [number, number][][];
+}
+
 @pre<Region>('save', async function (next) {
   const region = this as Omit<any, keyof Region> & Region;
 
   if (!region._id) {
     region._id = new Types.ObjectId().toString();
+  }
+
+  // ensure that the polygon is closed
+  const first = region.geometry.coordinates[0][0];
+
+  const last =
+    region.geometry.coordinates[0][region.geometry.coordinates[0].length - 1];
+
+  if (first[0] !== last[0] || first[1] !== last[1]) {
+    region.geometry.coordinates[0].push(first);
   }
 
   if (region.isNew) {
@@ -26,14 +44,14 @@ import { UserModel } from '.';
 
   next(region.validateSync());
 })
+@index({ geometry: '2dsphere' })
 @modelOptions({ schemaOptions: { validateBeforeSave: true } })
 export class Region {
   @Prop({ required: true })
   name!: string;
 
-  // Array of coordinates eg. [[10, 20], [30, 40], [50, 60], [10, 20]]
-  @Prop({ required: true, type: () => [[Number]] })
-  coordinates: [number, number][];
+  @Prop({ required: true, type: () => Geometry })
+  geometry!: Geometry;
 
   @Prop({ ref: () => User, required: true, type: () => String })
   user: Ref<User>;
