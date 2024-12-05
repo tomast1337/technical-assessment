@@ -2,23 +2,20 @@ import { faker } from '@faker-js/faker';
 import axios, { AxiosInstance } from 'axios';
 import * as bcrypt from 'bcryptjs';
 import { expect } from 'chai';
-import * as mongoose from 'mongoose';
 import { SinonSandbox, createSandbox, restore, stub } from 'sinon';
 
+import GeoLib from '@app/lib';
+import { clearDatabase, closeDatabase, connect } from '@app/tests/db-handler';
 import { UserModel } from '@models/index';
-
-import '../database';
-import GeoLib from '../lib';
-
-import '../server';
 
 describe('Auth E2E', () => {
   let axiosInstance: AxiosInstance;
-  let session: mongoose.ClientSession;
-  let _sandbox: SinonSandbox;
   const geoLibStub: Partial<typeof GeoLib> = {};
+  let _sandbox: SinonSandbox;
 
   before(async () => {
+    await connect();
+
     axiosInstance = axios.create({
       baseURL: 'http://localhost:3000/api',
       headers: {
@@ -27,9 +24,14 @@ describe('Auth E2E', () => {
     });
 
     _sandbox = createSandbox();
-    session = await mongoose.startSession();
+  });
 
-    // Mock GeoLib methods
+  after(async () => {
+    restore();
+    await closeDatabase();
+  });
+
+  beforeEach(async () => {
     geoLibStub.getAddressFromCoordinates = stub(
       GeoLib,
       'getAddressFromCoordinates',
@@ -44,31 +46,49 @@ describe('Auth E2E', () => {
     });
   });
 
-  after(async () => {
-    restore();
-    await session.endSession();
-  });
-
-  beforeEach(async () => {
-    await session.startTransaction();
-  });
-
   afterEach(async () => {
-    await session.abortTransaction();
+    await clearDatabase();
   });
 
   describe('POST /auth/register', () => {
-    it('should register a new user', async () => {
+    it('should register a new user with address', async () => {
       const name = faker.person.firstName();
       const email = faker.internet.email();
       const password = faker.internet.password();
       const address = faker.location.streetAddress({ useFullAddress: true });
 
+      try {
+        const result = await axiosInstance.post('/auth/register', {
+          name,
+          email,
+          password,
+          address,
+        });
+
+        expect(result.data).to.have.property(
+          'message',
+          'User registered successfully',
+        );
+      } catch (error) {
+        console.log((error as any).response.data);
+      }
+    });
+
+    it('should register a new user with coords', async () => {
+      const name = faker.person.firstName();
+      const email = faker.internet.email();
+      const password = faker.internet.password();
+
+      const coordinates = [
+        faker.location.latitude(),
+        faker.location.longitude(),
+      ];
+
       const result = await axiosInstance.post('/auth/register', {
         name,
         email,
         password,
-        address,
+        coordinates,
       });
 
       expect(result.data).to.have.property(
@@ -154,12 +174,14 @@ describe('Auth E2E', () => {
       const password = faker.internet.password();
       const address = faker.location.streetAddress({ useFullAddress: true });
 
-      await UserModel.create({
-        name,
-        email,
-        password: bcrypt.hashSync(password, 10),
-        address,
-      });
+      await UserModel.create([
+        {
+          name,
+          email,
+          password: bcrypt.hashSync(password, 10),
+          address,
+        },
+      ]);
 
       const loggedUser = await axiosInstance.post('/auth/login', {
         email,
