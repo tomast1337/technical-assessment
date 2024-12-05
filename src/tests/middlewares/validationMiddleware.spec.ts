@@ -9,7 +9,7 @@ import { SinonStub, restore, stub } from 'sinon';
 import {
   validationBodyMiddleware,
   validationQueryMiddleware,
-} from './validationMiddleware';
+} from '@middlewares/validationMiddleware';
 
 class TestDto {
   @IsInt()
