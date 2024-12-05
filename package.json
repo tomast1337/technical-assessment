@@ -6,7 +6,8 @@
     "scripts": {
         "dev": "nodemon",
         "test": "mocha",
-        "test:watch": "mocharc --watch",
+        "test:watch": "mocha --config .mocharc.json --watch",
+        "test:cov": "nyc mocha",
         "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
         "format": "prettier --write \"src/**/*.ts\""
     },
@@ -64,6 +65,7 @@
         "eslint-plugin-unused-imports": "^2.0.0",
         "globals": "^15.13.0",
         "mocha": "^10.8.2",
+        "mongodb-memory-server": "^10.1.2",
         "nodemon": "^3.1.7",
         "prettier": "^2.8.8",
         "sinon": "^16.1.3",
