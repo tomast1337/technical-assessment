@@ -5,6 +5,7 @@ import sinon from 'sinon';
 import { RegionDto } from '@app/views/Region.dto';
 import { RegionModel } from '@models/index';
 
+import { Region } from '@app/models/region.model';
 import RegionService from './region.service';
 
 describe('RegionService', () => {
@@ -204,6 +205,38 @@ describe('RegionService', () => {
       expect(sortStub.calledOnce).to.be.true;
       expect(skipStub.calledOnce).to.be.true;
       expect(limitStub.calledOnce).to.be.true;
+    });
+  });
+
+  describe('getRegionsContainingPoint', () => {
+    it('should return a list of regions containing a point', async () => {
+      const point = [25.774, -80.19] as [number, number];
+
+      const regions: Partial<Region & { _id: string }>[] = [
+        {
+          _id: 'regionId',
+          name: 'Test Region',
+          user: 'userId',
+          geometry: {
+            type: 'Polygon',
+            coordinates: [
+              [
+                [25.774, -80.19],
+                [18.466, -66.118],
+                [32.321, -64.757],
+                [25.774, -80.19],
+              ],
+            ],
+          },
+        },
+      ];
+
+      findStub.resolves(regions);
+
+      const result = await RegionService.getRegionsContainingPoint(point);
+
+      expect(result).to.deep.equal(regions);
+      expect(findStub.calledOnce).to.be.true;
     });
   });
 });
