@@ -4,8 +4,8 @@ import { Prop, getModelForClass } from '@typegoose/typegoose';
 import { expect } from 'chai';
 import * as mongoose from 'mongoose';
 
-import db from '../database';
-import { Base } from './base.model';
+import db from '@app/database';
+import { Base } from '@models/base.model';
 
 // Create a derived class for testing purposes
 class TestModel extends Base {

@@ -6,9 +6,8 @@ import 'reflect-metadata';
 import mongoose from 'mongoose';
 import { restore, stub } from 'sinon';
 
-import GeoLib from '../lib';
-
-import { UserModel } from '.';
+import GeoLib from '@app/lib';
+import { UserModel } from '@models/index';
 
 describe('User model', () => {
   let session: mongoose.ClientSession;
