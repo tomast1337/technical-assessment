@@ -239,4 +239,42 @@ describe('RegionService', () => {
       expect(findStub.calledOnce).to.be.true;
     });
   });
+
+  describe('getRegionsNearPoint', () => {
+    it('should return a list of regions near a point', async () => {
+      const point = [25.774, -80.19] as [number, number];
+      const maxDistance = 1000;
+      const userId = 'userId';
+
+      const regions: Partial<Region & { _id: string }>[] = [
+        {
+          _id: 'regionId',
+          name: 'Test Region',
+          user: 'userId',
+          geometry: {
+            type: 'Polygon',
+            coordinates: [
+              [
+                [25.774, -80.19],
+                [18.466, -66.118],
+                [32.321, -64.757],
+                [25.774, -80.19],
+              ],
+            ],
+          },
+        },
+      ];
+
+      findStub.resolves(regions);
+
+      const result = await RegionService.getRegionsNearPoint(
+        point,
+        maxDistance,
+        userId,
+      );
+
+      expect(result).to.deep.equal(regions);
+      expect(findStub.calledOnce).to.be.true;
+    });
+  });
 });
