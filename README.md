@@ -5,7 +5,7 @@
 defina as variáveis de ambiente no arquivo .env ou no ambiente de execução
 
 ```ini
-MONGO_URI=mongodb://root:example@mongo:27021/oz-tech-test?authSource=admin # Substitua pelo seu caso necessário
+MONGO_URI=mongodb://127.0.0.1:27017,127.0.0.1:27018,127.0.0.1:27019/?replicaSet=rs0 # Substitua pelo seu caso necessário
 JWT_SECRET=A_JWT_SECRET
 JWT_EXPIRES_IN=1d
 JWT_REFRESH_SECRET=A_JWT_REFRESH_SECRET
