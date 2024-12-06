@@ -24,7 +24,7 @@ export const regionActionsRouter = Router();
  * /api/region-actions/containing-point:
  *   get:
  *     summary: Get regions containing a specific point
- *     tags: [Region]
+ *     tags: [RegionActions]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -96,7 +96,7 @@ regionActionsRouter.get(
  * /api/region-actions/near-point:
  *   get:
  *     summary: Get regions near a specific point
- *     tags: [Region]
+ *     tags: [RegionActions]
  *     security:
  *       - bearerAuth: []
  *     parameters:
