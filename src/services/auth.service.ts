@@ -2,7 +2,6 @@ import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 
 import lib from '@app/lib';
-import logger from '@app/logger';
 import { env } from '@config/index';
 import { UserModel } from '@models/index';
 import { User } from '@models/user.model';
