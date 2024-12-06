@@ -32,6 +32,10 @@ describe('AuthService', () => {
 
   describe('registerUser', () => {
     it('should register a new user', async () => {
+      sinon
+        .stub(lib, 'getCoordinatesFromAddress')
+        .resolves({ lat: 25.774, lng: -80.19 });
+
       findOneStub.resolves(null);
       hashStub.resolves('hashedPassword');
       createStub.resolves();
