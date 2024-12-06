@@ -17,6 +17,13 @@ export class PageDto<T> {
   @Min(1)
   limit: number;
 
+  constructor(data: T[], total: number, page: number, limit: number) {
+    this.data = data;
+    this.total = total;
+    this.page = page;
+    this.limit = limit;
+  }
+
   public static from<T>(
     data: T[],
     total: number,
@@ -30,6 +37,6 @@ export class PageDto<T> {
       limit,
     };
 
-    return plainToInstance(PageDto<T>, pageData);
+    return pageData as PageDto<T>;
   }
 }
