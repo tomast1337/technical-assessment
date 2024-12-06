@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   mongo1:
-    container_name: oz-tech-test-mongo1
+    container_name: oz-tech-map-dev-mongo1
     image: mongo:7.0
     command: ['--replSet', 'rs0', '--bind_ip_all', '--port', '27017']
     ports:
@@ -21,7 +21,7 @@ services:
       - 'mongo1_config:/data/configdb'
 
   mongo2:
-    container_name: oz-tech-test-mongo2
+    container_name: oz-tech-map-dev-mongo2
     image: mongo:7.0
     command: ['--replSet', 'rs0', '--bind_ip_all', '--port', '27018']
     ports:
@@ -33,7 +33,7 @@ services:
       - 'mongo2_config:/data/configdb'
 
   mongo3:
-    container_name: oz-tech-test-mongo3
+    container_name: oz-tech-map-dev-mongo3
     image: mongo:7.0
     command: ['--replSet', 'rs0', '--bind_ip_all', '--port', '27019']
     ports:
