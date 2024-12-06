@@ -1,10 +1,18 @@
-import 'reflect-metadata';
 import { Prop, Ref, index, modelOptions, pre } from '@typegoose/typegoose';
 import { Types } from 'mongoose';
+import 'reflect-metadata';
 
 import { User } from './user.model';
 
 import { UserModel } from '.';
+
+const areCoordinatesValid = (coordinates: [number, number][][]): boolean => {
+  return coordinates.every((polygon) =>
+    polygon.every(
+      ([lng, lat]) => lng >= -180 && lng <= 180 && lat >= -90 && lat <= 90,
+    ),
+  );
+};
 
 class Geometry {
   @Prop({ required: true, enum: ['Polygon'] })
@@ -29,6 +37,15 @@ class Geometry {
 
   if (first[0] !== last[0] || first[1] !== last[1]) {
     region.geometry.coordinates[0].push(first);
+  }
+
+  // Validate coordinates
+  if (!areCoordinatesValid(region.geometry.coordinates)) {
+    console.error('Invalid coordinates');
+    console.error(region.geometry.coordinates);
+    throw new Error(
+      'Invalid coordinates: Latitude must be between -90 and 90, and longitude must be between -180 and 180',
+    );
   }
 
   if (region.isNew) {
