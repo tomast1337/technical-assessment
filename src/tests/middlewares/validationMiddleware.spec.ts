@@ -32,6 +32,26 @@ class TestDto {
   order?: boolean;
 }
 
+class NestedDto {
+  @IsString()
+  name: string;
+
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  age: number;
+}
+
+class ParentDto {
+  @Type(() => NestedDto)
+  nested: NestedDto;
+
+  @IsInt()
+  @Min(1)
+  @Type(() => Number)
+  page: number;
+}
+
 describe('Validation Middleware', () => {
   let req: Partial<Request>;
   let res: Partial<Response>;
@@ -76,6 +96,29 @@ describe('Validation Middleware', () => {
       req.body = { page: 0, limit: 10, shortBy: 'name', order: true };
 
       const middleware = validationBodyMiddleware(TestDto);
+      await middleware(req as Request, res as Response, next as NextFunction);
+
+      expect(next.called).to.be.false;
+      expect(statusStub.calledOnceWith(StatusCodes.BAD_REQUEST)).to.be.true;
+      expect(jsonStub.calledOnce).to.be.true;
+      expect(jsonStub.firstCall.args[0]).to.have.property('message');
+    });
+
+    it('should validate nested objects', async () => {
+      req.body = { nested: { name: 'John Doe', age: 30 }, page: 1 };
+
+      const middleware = validationBodyMiddleware(ParentDto);
+      await middleware(req as Request, res as Response, next as NextFunction);
+
+      expect(next.calledOnce).to.be.true;
+      expect(statusStub.called).to.be.false;
+      expect(jsonStub.called).to.be.false;
+    });
+
+    it('should return 400 if nested object validation fails', async () => {
+      req.body = { nested: { name: 'John Doe', age: 0 }, page: 0 };
+
+      const middleware = validationBodyMiddleware(ParentDto);
       await middleware(req as Request, res as Response, next as NextFunction);
 
       expect(next.called).to.be.false;
