@@ -32,17 +32,16 @@ describe('RegionService', () => {
     it('should create a new region', async () => {
       const regionDto: RegionDto = {
         name: 'Test Region',
-        geometry: {
-          type: 'Polygon',
-          coordinates: [
-            [
-              [25.774, -80.19],
-              [18.466, -66.118],
-              [32.321, -64.757],
-              [25.774, -80.19],
-            ],
+
+        type: 'Polygon',
+        coordinates: [
+          [
+            [25.774, -80.19],
+            [18.466, -66.118],
+            [32.321, -64.757],
+            [25.774, -80.19],
           ],
-        },
+        ],
       };
 
       const id = new Types.ObjectId().toString();
@@ -87,17 +86,16 @@ describe('RegionService', () => {
     it('should update a region if found', async () => {
       const regionDto: RegionDto = {
         name: 'Updated Region',
-        geometry: {
-          type: 'Polygon',
-          coordinates: [
-            [
-              [25.774, -80.19],
-              [18.466, -66.118],
-              [32.321, -64.757],
-              [25.774, -80.19],
-            ],
+
+        type: 'Polygon',
+        coordinates: [
+          [
+            [25.774, -80.19],
+            [18.466, -66.118],
+            [32.321, -64.757],
+            [25.774, -80.19],
           ],
-        },
+        ],
       };
 
       const updatedRegion = { _id: 'regionId', ...regionDto, user: 'userId' };
@@ -119,17 +117,16 @@ describe('RegionService', () => {
       try {
         await RegionService.updateRegion('userId', 'regionId', {
           name: 'Updated Region',
-          geometry: {
-            type: 'Polygon',
-            coordinates: [
-              [
-                [25.774, -80.19],
-                [18.466, -66.118],
-                [32.321, -64.757],
-                [25.774, -80.19],
-              ],
+
+          type: 'Polygon',
+          coordinates: [
+            [
+              [25.774, -80.19],
+              [18.466, -66.118],
+              [32.321, -64.757],
+              [25.774, -80.19],
             ],
-          },
+          ],
         });
       } catch (error) {
         expect((error as any).message).to.equal(
