@@ -2,6 +2,7 @@ import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 
 import lib from '@app/lib';
+import logger from '@app/logger';
 import { env } from '@config/index';
 import { UserModel } from '@models/index';
 import { User } from '@models/user.model';
@@ -28,25 +29,27 @@ class AuthService {
       throw new Error('User already exists');
     }
 
-    // should be address or coordinates and not both
+    // Ensure either address or coordinates are provided, but not both
     if (address && coordinates) {
-      throw new Error('Either address or coordinates should be provided');
+      throw new Error(
+        'Either address or coordinates should be provided, not both',
+      );
     }
 
+    // If coordinates are provided, get the address from the coordinates
     if (coordinates) {
       address = await lib.getAddressFromCoordinates(coordinates);
     }
 
-    if (!address) {
-      throw new Error('Address is required');
+    // If address is provided, get the coordinates from the address
+    if (address && !coordinates) {
+      const { lat, lng } = await lib.getCoordinatesFromAddress(address);
+      coordinates = [lat, lng];
     }
 
-    if (coordinates) {
-      address = await lib.getAddressFromCoordinates(coordinates);
-    }
-
+    // Ensure address is valid
     if (!address) {
-      throw new Error('Invalid coordinates');
+      throw new Error('Invalid address or coordinates');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
