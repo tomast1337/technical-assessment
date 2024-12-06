@@ -6,8 +6,11 @@ import sinon from 'sinon';
 import lib from '@app/lib';
 import { UserModel } from '@models/index';
 import AuthService from '@services/auth.service';
+import GeoLib from '@app/lib';
+import { faker } from '@faker-js/faker';
 
 describe('AuthService', () => {
+  const geoLibStub: Partial<typeof GeoLib> = {};
   let findOneStub: sinon.SinonStub;
   let createStub: sinon.SinonStub;
   let hashStub: sinon.SinonStub;
@@ -24,6 +27,18 @@ describe('AuthService', () => {
     signStub = sinon.stub(jwt, 'sign');
     verifyStub = sinon.stub(jwt, 'verify');
     updateOneStub = sinon.stub(UserModel, 'updateOne');
+
+    // Mock GeoLib methods
+    geoLibStub.getAddressFromCoordinates = sinon
+      .stub(GeoLib, 'getAddressFromCoordinates')
+      .resolves(faker.location.streetAddress({ useFullAddress: true }));
+
+    geoLibStub.getCoordinatesFromAddress = sinon
+      .stub(GeoLib, 'getCoordinatesFromAddress')
+      .resolves({
+        lat: faker.location.latitude(),
+        lng: faker.location.longitude(),
+      });
   });
 
   afterEach(() => {
@@ -79,7 +94,7 @@ describe('AuthService', () => {
         });
       } catch (error) {
         expect((error as any).message).to.equal(
-          'Either address or coordinates should be provided',
+          'Either address or coordinates should be provided, not both',
         );
       }
 
@@ -98,7 +113,9 @@ describe('AuthService', () => {
           coordinates: [25.774, -80.19],
         });
       } catch (error) {
-        expect((error as any).message).to.equal('Address is required');
+        expect((error as any).message).to.equal(
+          'Invalid address or coordinates',
+        );
       }
 
       expect(findOneStub.calledOnce).to.be.true;
@@ -115,7 +132,9 @@ describe('AuthService', () => {
           password: 'password123',
         });
       } catch (error) {
-        expect((error as any).message).to.equal('Address is required');
+        expect((error as any).message).to.equal(
+          'Invalid address or coordinates',
+        );
       }
 
       expect(findOneStub.calledOnce).to.be.true;
