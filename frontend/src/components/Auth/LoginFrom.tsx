@@ -1,14 +1,16 @@
 import React from "react";
 import { Form, Input, Button, notification } from "antd";
-
+import { LoginUser } from "@app/services/Auth/types";
+import { FormattedMessage, useIntl } from "react-intl";
 export const LoginForm: React.FC = () => {
   const [form] = Form.useForm();
+  const intl = useIntl();
 
-  const onFinish = (values: any) => {
+  const onFinish = (values: LoginUser) => {
     console.log("Login successful:", values);
     notification.success({
-      message: "Login Successful",
-      description: "You have been logged in successfully.",
+      message: intl.formatMessage({ id: "login.success" }),
+      description: intl.formatMessage({ id: "login.success.description" }),
     });
   };
 
@@ -23,30 +25,49 @@ export const LoginForm: React.FC = () => {
       {/* Email */}
       <Form.Item
         name="email"
-        label="Email"
+        label={<FormattedMessage id="login.email" />}
         rules={[
-          { required: true, message: "Please enter your email" },
-          { type: "email", message: "Please enter a valid email address" },
+          {
+            required: true,
+            message: intl.formatMessage({ id: "login.email" }),
+          },
+          { type: "email", message: intl.formatMessage({ id: "login.email" }) },
         ]}
       >
-        <Input placeholder="Your Email" />
+        <Input placeholder={intl.formatMessage({ id: "login.email" })} />
       </Form.Item>
 
       {/* Password */}
       <Form.Item
         name="password"
-        label="Password"
-        rules={[{ required: true, message: "Please enter your password" }]}
+        label={<FormattedMessage id="login.password" />}
+        rules={[
+          {
+            required: true,
+            message: intl.formatMessage({ id: "login.password" }),
+          },
+        ]}
       >
-        <Input.Password placeholder="Your Password" />
+        <Input.Password
+          placeholder={intl.formatMessage({ id: "login.password" })}
+        />
       </Form.Item>
 
       {/* Submit Button */}
       <Form.Item>
         <Button type="primary" htmlType="submit" block>
-          Login
+          <FormattedMessage id="login.submit" />
         </Button>
       </Form.Item>
+
+      {/* Register Link */}
+      <Form.Item>
+        <Button type="link" block>
+          <FormattedMessage id="login.register" />
+        </Button>
+      </Form.Item>
+
+      {/* Language Switcher */}
     </Form>
   );
 };
