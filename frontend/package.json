@@ -1,52 +1,33 @@
 {
   "name": "frontend",
-  "product": "ext",
-  "version": "0.0.1",
-  "description": "frontend description for Ext JS app frontend",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/"
-  },
-  "keywords": ["Ext","JS","Sencha","HTML5"],
-  "author": "Sencha, Inc.",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/"
-  },
-  "homepage": "http://www.sencha.com",
-
-
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "start": "npm run dev",
-    "clean": "rimraf build",
-    "dev": "webpack-dev-server --env profile=desktop --env browser=yes --env verbose=no",
-    "build": "npm run clean && cross-env webpack --env profile=desktop --env environment=production --env treeshake=yes",
-    "build:testing": "npm run clean && cross-env webpack --env profile=desktop --env treeshake=yes --env cmdopts=--testing"
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
   },
-
   "dependencies": {
-    
-    "@sencha/ext-modern": "~7.8.0",
-    "@sencha/ext-modern-theme-material": "~7.8.0",
-    "@sencha/ext": "~7.8.0"
+    "@ant-design/icons": "^5.5.2",
+    "antd": "^5.22.4",
+    "axios": "^1.7.9",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@sencha/ext-webpack-plugin": "~7.8.0",
-    "cross-env": "^5.2.0",
-    "portfinder": "^1.0.21",
-    "rimraf": "^3.0.2",
-    "webpack": "^5.55.1",
-    "webpack-cli": "^4.8.0",
-    "webpack-dev-server": "^4.2.1",
-    "@babel/cli": "^7.5.5",
-    "@babel/core": "^7.5.5",
-    "@babel/plugin-proposal-object-rest-spread": "^7.5.5",
-    "@babel/plugin-transform-async-to-generator": "^7.5.0",
-    "@babel/plugin-transform-regenerator": "^7.4.5",
-    "@babel/preset-env": "^7.5.5",
-    "babel-plugin-add-module-exports": "^1.0.2",
-    "babel-loader": "^8.0.6",
-    "lodash.find": "^4.6.0",
-    "replace": "^1.1.1"
+    "@eslint/js": "^9.15.0",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.15.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.14",
+    "globals": "^15.12.0",
+    "typescript": "~5.6.2",
+    "typescript-eslint": "^8.15.0",
+    "vite": "^6.0.1",
+    "vite-tsconfig-paths": "^5.1.4"
   }
 }
