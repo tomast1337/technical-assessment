@@ -54,7 +54,6 @@ describe('Auth E2E', () => {
   });
 
   afterEach(async () => {
-    await UserModel.deleteMany({});
     await session.abortTransaction();
   });
 

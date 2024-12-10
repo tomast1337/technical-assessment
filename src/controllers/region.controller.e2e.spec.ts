@@ -15,6 +15,7 @@ import '@app/server';
 
 describe('Region E2E', () => {
   let axiosInstance: AxiosInstance;
+  let session: mongoose.ClientSession;
   let _sandbox: SinonSandbox;
   let token: string;
   const userId = new mongoose.Types.ObjectId().toString();
