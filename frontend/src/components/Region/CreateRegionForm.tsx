@@ -1,7 +1,7 @@
 import React from "react";
 import { Form, Input, Button, notification } from "antd";
 import { FormattedMessage, useIntl } from "react-intl";
-import { Region } from "@app/services/types";
+import { Region } from "@services/types";
 
 export const CreateRegionForm: React.FC = () => {
   const [form] = Form.useForm();
