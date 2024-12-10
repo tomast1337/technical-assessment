@@ -57,9 +57,10 @@ regionRouter.post(
   validationBodyMiddleware(RegionDto),
   async (req: Request, res: Response) => {
     const user = req.user as { _id: string };
+    const body = req.body as RegionDto;
 
     try {
-      const region = await createRegion(user._id, req.body);
+      const region = await createRegion(user._id, body);
       res.status(StatusCodes.CREATED).json(region);
     } catch (error) {
       res
@@ -155,9 +156,10 @@ regionRouter.put(
   async (req: Request, res: Response) => {
     const user = req.user as { _id: string };
     const { id } = req.params;
+    const body = req.body as RegionDto;
 
     try {
-      const region = await updateRegion(user._id, id, req.body);
+      const region = await updateRegion(user._id, id, body);
       res.status(StatusCodes.OK).json(region);
     } catch (error) {
       res
