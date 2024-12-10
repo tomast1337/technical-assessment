@@ -68,10 +68,6 @@ const boostrap = async () => {
     }),
   );
 
-  router.use('/', (req, res) => {
-    res.send('Welcome to the API');
-  });
-
   app.use((req, res, _next) => {
     res.status(StatusCodes.NOT_FOUND).json({ message: 'Not Found' });
   });
