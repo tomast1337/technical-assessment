@@ -1,9 +1,9 @@
+import 'reflect-metadata';
 import { Prop, Ref, pre } from '@typegoose/typegoose';
-// Import Types from mongoose
 
 import lib from '../lib';
-import { Base } from './base.model'; // Adjust the path as necessary
-import { Region } from './region.model'; // Adjust the path as necessary
+import { Base } from './base.model';
+import { Region } from './region.model';
 
 @pre<User>('save', async function (next) {
   const user = this as Omit<any, keyof User> & User;
