@@ -1,17 +1,13 @@
 import { validationBodyMiddleware } from '@middlewares/validationMiddleware';
-import {
-  DecodedTokenT,
-  RefreshToken,
-  loginUser,
-  registerUser,
-  updatePassword,
-} from '@services/auth.service';
+import AuthService, { DecodedTokenT } from '@services/auth.service';
 import { LoginUserDto } from '@views/LoginUser.dto';
-import { UpdatePasswordDto } from '@views/UpdatePassword.dto';
 import { RegisterUserDto } from '@views/RegisterUser.dto';
+import { UpdatePasswordDto } from '@views/UpdatePassword.dto';
 import { Request, Response, Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import passport = require('passport');
+
+const { RefreshToken, loginUser, registerUser, updatePassword } = AuthService;
 
 export const authRouter = Router();
 
