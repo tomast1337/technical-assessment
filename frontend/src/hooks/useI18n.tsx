@@ -1,10 +1,14 @@
 import { IntlProvider } from "react-intl";
 import enMessages from "../locales/en.json";
 import { ReactNode, createContext, useContext, useState } from "react";
-export type Locale = "en";
+export type Locale = "en" | "es" | "de" | "pt" | "lt";
 
 export const LocaleNames: Record<Locale, string> = {
   en: "English",
+  es: "Español",
+  de: "Deutsch",
+  pt: "Português",
+  lt: "Lietuvių",
 };
 interface I18nContextProps {
   locale: Locale;
@@ -13,6 +17,10 @@ interface I18nContextProps {
 
 const messages: Record<Locale, Record<string, string>> = {
   en: enMessages,
+  es: {},
+  de: {},
+  pt: {},
+  lt: {},
 };
 
 const I18nContext = createContext<I18nContextProps | undefined>(undefined);
