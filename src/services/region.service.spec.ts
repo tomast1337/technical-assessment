@@ -11,6 +11,7 @@ describe('RegionService', () => {
   let createStub: sinon.SinonStub;
   let findOneStub: sinon.SinonStub;
   let findOneAndUpdateStub: sinon.SinonStub;
+  let countDocumentsStub: sinon.SinonStub;
   let findOneAndDeleteStub: sinon.SinonStub;
   let findStub: sinon.SinonStub;
 
@@ -18,6 +19,7 @@ describe('RegionService', () => {
     createStub = sinon.stub(RegionModel, 'create');
     findOneStub = sinon.stub(RegionModel, 'findOne');
     findOneAndUpdateStub = sinon.stub(RegionModel, 'findOneAndUpdate');
+    countDocumentsStub = sinon.stub(RegionModel, 'countDocuments');
     findOneAndDeleteStub = sinon.stub(RegionModel, 'findOneAndDelete');
     findStub = sinon.stub(RegionModel, 'find');
   });
@@ -182,14 +184,21 @@ describe('RegionService', () => {
         limit: limitStub,
       } as any);
 
+      countDocumentsStub.resolves(1);
+
       const result = await RegionService.getRegions('userId', {
         page: 1,
         limit: 10,
       });
 
-      expect(result).to.deep.equal([
-        { _id: 'regionId', name: 'Test Region', user: 'userId' },
-      ]);
+      const expected = {
+        data: [{ _id: 'regionId', name: 'Test Region', user: 'userId' }],
+        total: 1,
+        page: 1,
+        limit: 10,
+      };
+
+      expect(result).to.deep.equal(expected);
 
       expect(findStub.calledOnce).to.be.true;
       expect(sortStub.calledOnce).to.be.true;
