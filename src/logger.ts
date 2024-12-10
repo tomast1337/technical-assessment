@@ -2,7 +2,7 @@ import { createLogger, format, transports } from 'winston';
 
 import { env } from './config';
 
-const getLevel = (env: string) => {
+const getLevel = (env: 'development' | 'test' | 'production') => {
   switch (env) {
     case 'development':
       return 'debug';
