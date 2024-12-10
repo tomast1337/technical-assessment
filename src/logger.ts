@@ -18,23 +18,13 @@ const logger = createLogger({
   format: format.combine(
     format.colorize(),
     format.timestamp(),
-    format.printf(
-      ({
-        timestamp,
-        level,
-        message,
-        label,
-      }: {
-        timestamp: string;
-        level: string;
-        message: string;
-        label: string;
-      }) => {
-        return `[${label}] ${
-          timestamp.split('T')[0] + ' ' + timestamp.split('T')[1].split('.')[0]
-        } ${level}: ${message}`;
-      },
-    ),
+    format.printf(({ timestamp, level, message, label }) => {
+      return `[${label}] ${
+        (timestamp as string).split('T')[0] +
+        ' ' +
+        (timestamp as string).split('T')[1].split('.')[0]
+      } ${level}: ${message}`;
+    }),
   ),
   transports: [
     new transports.Console(),
