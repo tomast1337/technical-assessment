@@ -1,19 +1,22 @@
-import 'reflect-metadata';
+import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
   IsNotEmpty,
+  IsObject,
   IsString,
   Validate,
+  ValidateNested,
   ValidationArguments,
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
+import 'reflect-metadata';
 
 @ValidatorConstraint({ name: 'isFirstAndLastSame', async: false })
 class IsFirstAndLastSameConstraint implements ValidatorConstraintInterface {
   validate(coordinates: [number, number][], _args: ValidationArguments) {
-    if (!Array.isArray(coordinates) || coordinates.length < 3) {
+    if (!Array.isArray(coordinates) || coordinates.length < 4) {
       return false;
     }
 
@@ -27,13 +30,26 @@ class IsFirstAndLastSameConstraint implements ValidatorConstraintInterface {
   }
 }
 
+class GeometryDto {
+  @IsString()
+  @IsNotEmpty()
+  type: string;
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => Array)
+  @Validate(IsFirstAndLastSameConstraint)
+  coordinates: [number, number][][];
+}
+
 export class RegionDto {
   @IsString()
   @IsNotEmpty()
   name: string;
 
-  @IsArray()
-  @ArrayMinSize(3)
-  @Validate(IsFirstAndLastSameConstraint)
-  coordinates: [number, number][];
+  @IsObject()
+  @ValidateNested()
+  @Type(() => GeometryDto)
+  geometry: GeometryDto;
 }
