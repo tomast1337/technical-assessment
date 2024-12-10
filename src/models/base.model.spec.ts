@@ -1,7 +1,8 @@
+import { Prop, getModelForClass } from '@typegoose/typegoose';
+import { expect } from 'chai';
 import * as mongoose from 'mongoose';
 import * as sinon from 'sinon';
-import { expect } from 'chai';
-import { getModelForClass, Prop } from '@typegoose/typegoose';
+
 import { Base } from './base.model'; // Adjust the path as necessary
 
 // Create a derived class for testing purposes

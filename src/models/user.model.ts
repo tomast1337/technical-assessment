@@ -1,5 +1,6 @@
-import { pre, Prop, Ref } from '@typegoose/typegoose';
-import { Types } from 'mongoose'; // Import Types from mongoose
+import { Prop, Ref, pre } from '@typegoose/typegoose';
+// Import Types from mongoose
+
 import lib from '../lib';
 import { Base } from './base.model'; // Adjust the path as necessary
 import { Region } from './region.model'; // Adjust the path as necessary

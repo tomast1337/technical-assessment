@@ -1,6 +1,8 @@
-import { pre, Prop, Ref, modelOptions } from '@typegoose/typegoose';
+import { Prop, Ref, modelOptions, pre } from '@typegoose/typegoose';
 import { Types } from 'mongoose'; // Import Types from mongoose
+
 import { User } from './user.model'; // Adjust the path as necessary
+
 import { UserModel } from '.';
 
 @pre<Region>('save', async function (next) {

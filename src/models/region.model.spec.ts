@@ -3,7 +3,9 @@ import { expect } from 'chai';
 import * as mongoose from 'mongoose';
 import { Types } from 'mongoose';
 import * as sinon from 'sinon';
+
 import { Region } from './region.model';
+
 import { UserModel } from './index';
 
 const RegionModel = getModelForClass(Region);
@@ -28,6 +30,7 @@ describe('Region Model', () => {
 
   it('should create a new region with a default _id', async () => {
     const name = 'Test Region';
+
     const coordinates: [number, number][][] = [
       [
         [10, 20],
@@ -35,8 +38,10 @@ describe('Region Model', () => {
         [50, 60],
       ],
     ];
+
     const user = new Types.ObjectId().toString();
     const regionInstance = new RegionModel({ name, coordinates, user });
+
     const saveStub = sandbox
       .stub(regionInstance, 'save')
       .resolves(regionInstance);
@@ -54,6 +59,7 @@ describe('Region Model', () => {
 
   it('should use the provided _id if specified', async () => {
     const name = 'Test Region';
+
     const coordinates: [number, number][][] = [
       [
         [10, 20],
@@ -61,14 +67,17 @@ describe('Region Model', () => {
         [50, 60],
       ],
     ];
+
     const user = new Types.ObjectId().toString();
     const customId = new Types.ObjectId().toString();
+
     const regionInstance = new RegionModel({
       _id: customId,
       name,
       coordinates,
       user,
     });
+
     const saveStub = sandbox
       .stub(regionInstance, 'save')
       .resolves(regionInstance);
@@ -86,6 +95,7 @@ describe('Region Model', () => {
 
   it("should add the region to the user's regions array", async () => {
     const name = 'Test Region';
+
     const coordinates: [number, number][][] = [
       [
         [10, 20],
@@ -93,8 +103,10 @@ describe('Region Model', () => {
         [50, 60],
       ],
     ];
+
     const user = 'test-user-id';
     const regionInstance = new RegionModel({ name, coordinates, user });
+
     const saveStub = sandbox
       .stub(regionInstance, 'save')
       .resolves(regionInstance);
@@ -106,6 +118,7 @@ describe('Region Model', () => {
       password: 'password',
       regions: [regionInstance._id.toString()],
     });
+
     userFindOneStub.resolves(userInstance);
 
     const userSaveStub = sandbox
