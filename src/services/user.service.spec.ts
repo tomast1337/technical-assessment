@@ -7,8 +7,8 @@ import { UserModel } from '@models/index';
 import { PagingDto } from '@views/Paging.dto';
 import '../database';
 import GeoLib from '../lib';
-import { deleteUser, getUserById, getUsers, updateUser } from './user.service';
-
+import UserService from './user.service';
+const { deleteUser, getUserById, getUsers, updateUser } = UserService;
 describe('User Service', () => {
   let session;
   let sandbox: sinon.SinonSandbox;
@@ -139,8 +139,9 @@ describe('User Service', () => {
       ]);
 
       const query: PagingDto = { page: 1, limit: 1, order: true, shortBy: 'name' };
-      const result = await getUsers(users[0], query);
+      const result = await getUsers(query);
       expect(result).to.have.lengthOf(1);
+      expect(result[0]._id.toString()).to.equal(users[0]._id.toString());
     });
   });
 });
