@@ -5,8 +5,7 @@ import sinon from 'sinon';
 
 import lib from '@app/lib';
 import { UserModel } from '@models/index';
-
-import AuthService from './auth.service';
+import AuthService from '@services/auth.service';
 
 describe('AuthService', () => {
   let findOneStub: sinon.SinonStub;

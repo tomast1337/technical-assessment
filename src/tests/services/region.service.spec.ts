@@ -5,8 +5,7 @@ import sinon from 'sinon';
 import { Region } from '@app/models/region.model';
 import { RegionDto } from '@app/views/Region.dto';
 import { RegionModel } from '@models/index';
-
-import RegionService from './region.service';
+import RegionService from '@services/region.service';
 
 describe('RegionService', () => {
   let createStub: sinon.SinonStub;

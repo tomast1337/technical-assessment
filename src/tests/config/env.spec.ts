@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { plainToClass } from 'class-transformer';
 import { validateSync } from 'class-validator';
 
-import { Environment } from './index'; // Adjust the path as necessary
+import { Environment } from '@config/index'; // Adjust the path as necessary
 
 describe('Environment Variables Validation', () => {
   it('should validate environment variables successfully', () => {

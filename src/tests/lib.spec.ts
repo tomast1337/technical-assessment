@@ -2,7 +2,7 @@ import { Client } from '@googlemaps/google-maps-services-js';
 import { expect } from 'chai';
 import sinon from 'sinon';
 
-import GeoLib from './lib';
+import GeoLib from '@app/lib';
 
 describe('GeoLib', function () {
   let clientStub: sinon.SinonStubbedInstance<Client>;

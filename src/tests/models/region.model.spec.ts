@@ -4,9 +4,8 @@ import { expect } from 'chai';
 import * as mongoose from 'mongoose';
 import { restore, stub } from 'sinon';
 
-import GeoLib from '../lib';
-
-import { RegionModel, UserModel } from '.';
+import GeoLib from '@app/lib';
+import { RegionModel, UserModel } from '@models/index';
 
 import '@app/database';
 import '@app/server';
