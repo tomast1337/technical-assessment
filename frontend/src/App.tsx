@@ -1,6 +1,6 @@
 import { AppRoutes } from "@routes/index";
 import { HashRouter } from "react-router-dom";
-import { I18nProvider } from "./hooks/useI18n";
+import { I18nProvider } from "./hooks/I18nProvider";
 
 export const App = () => {
   return (
