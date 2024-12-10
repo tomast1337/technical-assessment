@@ -1,12 +1,20 @@
-import * as express from 'express';
 import { env } from '@config/index';
-import passport from './auth/passaport';
 import { authRouter } from '@controllers/auth.controller';
-import { userRouter } from '@controllers/user.controller';
 import { regionRouter } from '@controllers/region.controller';
+import { userRouter } from '@controllers/user.controller';
+import * as cookieParser from 'cookie-parser';
+import * as express from 'express';
+import * as morgan from 'morgan';
+import * as swaggerJsdoc from 'swagger-jsdoc';
 import * as swaggerUi from 'swagger-ui-express';
-import { swaggerConfig } from './swaggerConfig'; // Adjust the path as necessary
-import swaggerJsdoc = require('swagger-jsdoc');
+
+import passport from './auth/passaport';
+import logger from './logger';
+import { swaggerConfig } from './swaggerConfig';
+import { StatusCodes } from 'http-status-codes';
+
+const loggerLocal = logger.child({ label: 'app' });
+loggerLocal.info('Starting server...');
 
 const app = express();
 const router = express.Router();
@@ -14,22 +22,62 @@ const port = env.PORT;
 
 const specs = swaggerJsdoc(swaggerConfig);
 
-app.use(express.json());
+app.use(
+  morgan('combined', {
+    stream: {
+      write: (message) =>
+        logger
+          .child({
+            label: 'http',
+          })
+          .info(message.trim()),
+    },
+  }),
+);
+
+app.use(cookieParser());
+app.use(
+  express.json({
+    limit: '50mb',
+  }),
+);
 app.use(passport.initialize());
 app.use('/api', router);
 
 router.use('/auth', authRouter);
-router.use('/user', userRouter);
-router.use('/region', regionRouter);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+router.use(
+  '/user',
+  passport.authenticate('jwt', { session: false }),
+  userRouter,
+);
+router.use(
+  '/region',
+  passport.authenticate('jwt', { session: false }),
+  regionRouter,
+);
+app.use(
+  '/api-docs',
+  swaggerUi.serve,
+  swaggerUi.setup(specs, {
+    explorer: true,
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  }),
+);
 
 router.use('/', (req, res) => {
   res.send('Welcome to the API');
 });
 
+app.use((req, res, next) => {
+  res.status(StatusCodes.NOT_FOUND).json({ message: 'Not Found' });
+});
+
 app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-  console.log(
+  loggerLocal.info(`Server is running on http://localhost:${port}`);
+
+  loggerLocal.debug(
     `API documentation is running on http://localhost:${port}/api-docs`,
   );
 });
