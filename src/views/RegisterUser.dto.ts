@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
 
 export class RegisterUserDto {

@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 import { IsBoolean, IsInt, IsOptional, IsString, Min } from 'class-validator';
 
 export class PagingDto {
