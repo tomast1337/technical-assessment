@@ -1,11 +1,10 @@
-import { IntlProvider } from "react-intl";
 import enMessages from "../locales/en.json";
 import esMessages from "../locales/es.json";
 import deMessages from "../locales/de.json";
 import ptMessages from "../locales/pt.json";
 import ltMessages from "../locales/lt.json";
 import nlMessages from "../locales/nl.json";
-import { ReactNode, createContext, useContext, useState } from "react";
+import { createContext, useContext } from "react";
 export type Locale = "en" | "es" | "de" | "pt" | "lt" | "nl";
 
 export const LocaleNames: Record<Locale, string> = {
@@ -21,7 +20,7 @@ interface I18nContextProps {
   setLocale: (locale: Locale) => void;
 }
 
-const messages: Record<Locale, Record<string, string>> = {
+export const messages: Record<Locale, Record<string, string>> = {
   en: enMessages,
   es: esMessages,
   de: deMessages,
@@ -30,19 +29,9 @@ const messages: Record<Locale, Record<string, string>> = {
   nl: nlMessages,
 };
 
-const I18nContext = createContext<I18nContextProps | undefined>(undefined);
-
-export const I18nProvider = ({ children }: { children: ReactNode }) => {
-  const [locale, setLocale] = useState<Locale>("en");
-
-  return (
-    <I18nContext.Provider value={{ locale, setLocale }}>
-      <IntlProvider locale={locale} messages={messages[locale]}>
-        {children}
-      </IntlProvider>
-    </I18nContext.Provider>
-  );
-};
+export const I18nContext = createContext<I18nContextProps | undefined>(
+  undefined
+);
 
 export const useI18n = () => {
   const context = useContext(I18nContext);
