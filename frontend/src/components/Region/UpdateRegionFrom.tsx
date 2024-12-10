@@ -3,7 +3,7 @@ import { Form, Input, Button, notification } from "antd";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import axios from "axios";
-import { Region } from "@app/services/types";
+import { Region } from "@services/types";
 
 interface UpdateRegionFormProps {
   initialValues: Region;

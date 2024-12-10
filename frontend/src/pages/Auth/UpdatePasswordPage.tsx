@@ -1,5 +1,5 @@
-import { ChangePasswordForm } from "@app/components/Auth/ChangePasswordForm";
-import { AppLayout } from "@app/components/Layout/AppLayout";
+import { ChangePasswordForm } from "@components/Auth/ChangePasswordForm";
+import { AppLayout } from "@components/Layout/AppLayout";
 
 export const UpdatePasswordPage = () => {
   return (
