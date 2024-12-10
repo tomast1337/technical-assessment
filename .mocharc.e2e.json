@@ -3,10 +3,9 @@
         "ts-node/register",
         "tsconfig-paths/register"
     ],
-    "spec": "src/**/*.spec.ts",
+    "spec": "src/**/*.e2e.ts",
     "timeout": 10000,
     "exit": true,
-    "watch": true,
     "watch-files": [
         "src/**/*.ts"
     ]

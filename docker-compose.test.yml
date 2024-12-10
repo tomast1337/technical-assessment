@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   mongo1:
-    container_name: oz-tech-map-prod-mongo1
+    container_name: oz-tech-test-mongo1
     image: mongo:7.0
     command: ['--replSet', 'rs0', '--bind_ip_all', '--port', '27017']
     ports:
@@ -21,7 +21,7 @@ services:
       - 'mongo1_config:/data/configdb'
 
   mongo2:
-    container_name: oz-tech-map-prod-mongo2
+    container_name: oz-tech-test-mongo2
     image: mongo:7.0
     command: ['--replSet', 'rs0', '--bind_ip_all', '--port', '27018']
     ports:
@@ -33,7 +33,7 @@ services:
       - 'mongo2_config:/data/configdb'
 
   mongo3:
-    container_name: oz-tech-map-prod-mongo3
+    container_name: oz-tech-test-mongo3
     image: mongo:7.0
     command: ['--replSet', 'rs0', '--bind_ip_all', '--port', '27019']
     ports:
@@ -44,29 +44,10 @@ services:
       - 'mongo3_data:/data/db'
       - 'mongo3_config:/data/configdb'
 
-  app:
-    container_name: oz-tech-map-prod-app
-    working_dir: /usr/src/app
-    restart: always
-    environment:
-      MONGO_URI: mongodb://mongo1:27017,mongo2:27018,mongo3:27019/oz-tech-map-prod?replicaSet=rs0
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - '3000:3000'
-      - '9229:9229'
-    command: npm run dev
-    depends_on:
-      - mongo
-    networks:
-      - app-network
-
 volumes:
-  mongo1-data:
-  mongo2-data:
-  mongo3-data:
-
-networks:
-  app-network:
-    driver: bridge
+  mongo1_data:
+  mongo2_data:
+  mongo3_data:
+  mongo1_config:
+  mongo2_config:
+  mongo3_config:
