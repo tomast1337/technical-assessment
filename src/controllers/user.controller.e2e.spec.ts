@@ -2,19 +2,16 @@ import { faker } from '@faker-js/faker';
 import axios, { AxiosInstance } from 'axios';
 import * as bcrypt from 'bcryptjs';
 import { expect } from 'chai';
-import * as mongoose from 'mongoose';
-
-import { RegionModel, UserModel } from '@models/index';
-
-import '../database';
-import GeoLib from '../lib';
-
 import { SinonSandbox, createSandbox, restore, stub } from 'sinon';
-import '../server';
+
+import GeoLib from '@app/lib';
+import { clearDatabase, closeDatabase, connect } from '@app/tests/db-handler';
+import { UserModel } from '@models/index';
+
+import '@app/server';
 
 describe('User E2E', () => {
   let axiosInstance: AxiosInstance;
-  let session: mongoose.ClientSession;
   let _sandbox: SinonSandbox;
   let name: string;
   let email: string;
@@ -23,8 +20,8 @@ describe('User E2E', () => {
   const geoLibStub: Partial<typeof GeoLib> = {};
 
   before(async () => {
+    await connect();
     _sandbox = createSandbox();
-    session = await mongoose.startSession();
 
     // Mock GeoLib methods
     geoLibStub.getAddressFromCoordinates = stub(
@@ -43,8 +40,7 @@ describe('User E2E', () => {
 
   after(async () => {
     restore();
-    await session.endSession();
-    await mongoose.disconnect();
+    await closeDatabase();
   });
 
   beforeEach(async () => {
@@ -72,14 +68,10 @@ describe('User E2E', () => {
         Authorization: `Bearer ${loggedUser.data.token}`,
       },
     });
-
-    await session.startTransaction();
   });
 
   afterEach(async () => {
-    await UserModel.deleteMany({});
-    await RegionModel.deleteMany({});
-    await session.abortTransaction();
+    await clearDatabase();
   });
 
   describe('GET /api/user/me', () => {

@@ -5,23 +5,23 @@ import { expect } from 'chai';
 import mongoose from 'mongoose';
 import { SinonSandbox, createSandbox, restore, stub } from 'sinon';
 
+import GeoLib from '@app/lib';
+import { clearDatabase, closeDatabase, connect } from '@app/tests/db-handler';
 import { UserModel } from '@models/index';
 import RegionService from '@services/region.service';
 
-import GeoLib from '../lib';
-
-import '@app/database';
 import '@app/server';
 
 describe('Region E2E', () => {
   let axiosInstance: AxiosInstance;
-  let session: mongoose.ClientSession;
   let _sandbox: SinonSandbox;
   let token: string;
   const userId = new mongoose.Types.ObjectId().toString();
   const geoLibStub: Partial<typeof GeoLib> = {};
 
   before(async () => {
+    await connect();
+
     // Mock GeoLib methods
     geoLibStub.getAddressFromCoordinates = stub(
       GeoLib,
@@ -67,16 +67,16 @@ describe('Region E2E', () => {
 
   after(async () => {
     restore();
-    await UserModel.deleteMany({});
-    await mongoose.disconnect();
+    await closeDatabase();
   });
 
   beforeEach(() => {
     _sandbox = createSandbox();
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     _sandbox.restore();
+    await clearDatabase();
   });
 
   describe('POST /api/region', () => {
@@ -126,12 +126,17 @@ describe('Region E2E', () => {
     it('should get a region by ID', async () => {
       const region = await RegionService.createRegion(userId, {
         name: 'Test Region',
-        coordinates: [
-          [25.774, -80.19],
-          [18.466, -66.118],
-          [32.321, -64.757],
-          [25.774, -80.19],
-        ],
+        geometry: {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [25.774, -80.19],
+              [18.466, -66.118],
+              [32.321, -64.757],
+              [25.774, -80.19],
+            ],
+          ],
+        },
       });
 
       const res = await axiosInstance.get(`/region/${region._id}`, {
@@ -161,12 +166,17 @@ describe('Region E2E', () => {
     it('should update a region by ID', async () => {
       const region = await RegionService.createRegion(userId, {
         name: 'Test Region',
-        coordinates: [
-          [25.774, -80.19],
-          [18.466, -66.118],
-          [32.321, -64.757],
-          [25.774, -80.19],
-        ],
+        geometry: {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [25.774, -80.19],
+              [18.466, -66.118],
+              [32.321, -64.757],
+              [25.774, -80.19],
+            ],
+          ],
+        },
       });
 
       const updatedData = {
@@ -224,12 +234,17 @@ describe('Region E2E', () => {
     it('should delete a region by ID', async () => {
       const region = await RegionService.createRegion(userId, {
         name: 'Test Region',
-        coordinates: [
-          [25.774, -80.19],
-          [18.466, -66.118],
-          [32.321, -64.757],
-          [25.774, -80.19],
-        ],
+        geometry: {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [25.774, -80.19],
+              [18.466, -66.118],
+              [32.321, -64.757],
+              [25.774, -80.19],
+            ],
+          ],
+        },
       });
 
       const res = await axiosInstance.delete(`/region/${region._id}`, {
@@ -263,22 +278,32 @@ describe('Region E2E', () => {
     it('should get all regions for the current user', async () => {
       await RegionService.createRegion(userId, {
         name: 'Test Region 1',
-        coordinates: [
-          [25.774, -80.19],
-          [18.466, -66.118],
-          [32.321, -64.757],
-          [25.774, -80.19],
-        ],
+        geometry: {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [25.774, -80.19],
+              [18.466, -66.118],
+              [32.321, -64.757],
+              [25.774, -80.19],
+            ],
+          ],
+        },
       });
 
       await RegionService.createRegion(userId, {
         name: 'Test Region 2',
-        coordinates: [
-          [25.774, -80.19],
-          [18.466, -66.118],
-          [32.321, -64.757],
-          [25.774, -80.19],
-        ],
+        geometry: {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [25.774, -80.19],
+              [18.466, -66.118],
+              [32.321, -64.757],
+              [25.774, -80.19],
+            ],
+          ],
+        },
       });
 
       const res = await axiosInstance.get('/region', {
