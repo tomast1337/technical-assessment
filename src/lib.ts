@@ -1,4 +1,4 @@
-import googleMapsClient, { Client } from '@googlemaps/google-maps-services-js';
+import { Client } from '@googlemaps/google-maps-services-js';
 
 import { env } from './config';
 import logger from './logger';
