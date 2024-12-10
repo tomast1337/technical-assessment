@@ -107,7 +107,7 @@ class RegionService {
     };
 
     if (userId) {
-      query.user = { $ne: userId };
+      query.user = { $ne: userId }; // Exclude the user's own regions
     }
 
     const regions = await RegionModel.find(query);

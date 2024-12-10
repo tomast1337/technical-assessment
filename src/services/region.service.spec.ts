@@ -2,10 +2,10 @@ import { expect } from 'chai';
 import { Types } from 'mongoose';
 import sinon from 'sinon';
 
+import { Region } from '@app/models/region.model';
 import { RegionDto } from '@app/views/Region.dto';
 import { RegionModel } from '@models/index';
 
-import { Region } from '@app/models/region.model';
 import RegionService from './region.service';
 
 describe('RegionService', () => {
@@ -271,6 +271,76 @@ describe('RegionService', () => {
         point,
         maxDistance,
         userId,
+      );
+
+      expect(result).to.deep.equal(regions);
+      expect(findStub.calledOnce).to.be.true;
+    });
+
+    it('should return a list of regions near a point excluding a user', async () => {
+      const point = [25.774, -80.19] as [number, number];
+      const maxDistance = 1000;
+      const userId = 'userId';
+
+      const regions: Partial<Region & { _id: string }>[] = [
+        {
+          _id: 'regionId',
+          name: 'Test Region',
+          user: 'notUserId',
+          geometry: {
+            type: 'Polygon',
+            coordinates: [
+              [
+                [25.774, -80.19],
+                [18.466, -66.118],
+                [32.321, -64.757],
+                [25.774, -80.19],
+              ],
+            ],
+          },
+        },
+      ];
+
+      findStub.resolves(regions);
+
+      const result = await RegionService.getRegionsNearPoint(
+        point,
+        maxDistance,
+        userId,
+      );
+
+      expect(result).to.deep.equal(regions);
+      expect(findStub.calledOnce).to.be.true;
+    });
+
+    it('should return a list of regions near a point not filtering by user', async () => {
+      const point = [25.774, -80.19] as [number, number];
+      const maxDistance = 1000;
+
+      const regions: Partial<Region & { _id: string }>[] = [
+        {
+          _id: 'regionId',
+          name: 'Test Region',
+          user: 'userId',
+          geometry: {
+            type: 'Polygon',
+            coordinates: [
+              [
+                [25.774, -80.19],
+                [18.466, -66.118],
+                [32.321, -64.757],
+                [25.774, -80.19],
+              ],
+            ],
+          },
+        },
+      ];
+
+      findStub.resolves(regions);
+
+      const result = await RegionService.getRegionsNearPoint(
+        point,
+        maxDistance,
       );
 
       expect(result).to.deep.equal(regions);
