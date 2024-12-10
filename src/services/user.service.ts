@@ -2,6 +2,7 @@ import { UserModel } from '@models/index';
 import { User } from '@models/user.model';
 
 import { PagingDto } from '../views/Paging.dto';
+import { PageDto } from '@app/views/Page.dto';
 
 class UserService {
   async getUserById(user: User, userId: string) {
@@ -50,7 +51,9 @@ class UserService {
       .limit(limit)
       .select('-password');
 
-    return users;
+    const total = await UserModel.countDocuments();
+
+    return PageDto.from(users, total, page, limit);
   }
 }
 
