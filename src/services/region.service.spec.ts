@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { Types } from 'mongoose';
 import sinon from 'sinon';
 
 import { RegionDto } from '@app/views/Region.dto';
@@ -36,10 +37,12 @@ describe('RegionService', () => {
         ],
       };
 
-      const createdRegion = { ...regionDto, user: 'userId' };
+      const id = new Types.ObjectId().toString();
+
+      const createdRegion = { ...regionDto, user: id };
       createStub.resolves(createdRegion);
 
-      const result = await RegionService.createRegion('userId', regionDto);
+      const result = await RegionService.createRegion(id, regionDto);
 
       expect(result).to.deep.equal(createdRegion);
       expect(createStub.calledOnce).to.be.true;
@@ -145,17 +148,35 @@ describe('RegionService', () => {
   });
 
   describe('getRegions', () => {
-    it('should return all regions for a user', async () => {
-      const regions = [
+    it('should return a paginated list of regions for a user', async () => {
+      findStub.restore();
+
+      const sortStub = sinon.stub().returnsThis();
+      const skipStub = sinon.stub().returnsThis();
+
+      const limitStub = sinon
+        .stub()
+        .resolves([{ _id: 'regionId', name: 'Test Region', user: 'userId' }]);
+
+      findStub = sinon.stub(RegionModel, 'find').returns({
+        sort: sortStub,
+        skip: skipStub,
+        limit: limitStub,
+      } as any);
+
+      const result = await RegionService.getRegions('userId', {
+        page: 1,
+        limit: 10,
+      });
+
+      expect(result).to.deep.equal([
         { _id: 'regionId', name: 'Test Region', user: 'userId' },
-      ];
+      ]);
 
-      findStub.resolves(regions);
-
-      const result = await RegionService.getRegions('userId');
-
-      expect(result).to.deep.equal(regions);
       expect(findStub.calledOnce).to.be.true;
+      expect(sortStub.calledOnce).to.be.true;
+      expect(skipStub.calledOnce).to.be.true;
+      expect(limitStub.calledOnce).to.be.true;
     });
   });
 });
