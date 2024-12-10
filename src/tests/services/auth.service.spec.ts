@@ -6,11 +6,8 @@ import sinon from 'sinon';
 import lib from '@app/lib';
 import { UserModel } from '@models/index';
 import AuthService from '@services/auth.service';
-import GeoLib from '@app/lib';
-import { faker } from '@faker-js/faker';
 
 describe('AuthService', () => {
-  const geoLibStub: Partial<typeof GeoLib> = {};
   let findOneStub: sinon.SinonStub;
   let createStub: sinon.SinonStub;
   let hashStub: sinon.SinonStub;
@@ -27,18 +24,6 @@ describe('AuthService', () => {
     signStub = sinon.stub(jwt, 'sign');
     verifyStub = sinon.stub(jwt, 'verify');
     updateOneStub = sinon.stub(UserModel, 'updateOne');
-
-    // Mock GeoLib methods
-    geoLibStub.getAddressFromCoordinates = sinon
-      .stub(GeoLib, 'getAddressFromCoordinates')
-      .resolves(faker.location.streetAddress({ useFullAddress: true }));
-
-    geoLibStub.getCoordinatesFromAddress = sinon
-      .stub(GeoLib, 'getCoordinatesFromAddress')
-      .resolves({
-        lat: faker.location.latitude(),
-        lng: faker.location.longitude(),
-      });
   });
 
   afterEach(() => {
@@ -48,6 +33,11 @@ describe('AuthService', () => {
   describe('registerUser', () => {
     it('should register a new user', async () => {
       findOneStub.resolves(null);
+
+      sinon
+        .stub(lib, 'getCoordinatesFromAddress')
+        .resolves({ lat: 25.774, lng: -80.19 });
+
       hashStub.resolves('hashedPassword');
       createStub.resolves();
 
