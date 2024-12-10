@@ -47,7 +47,7 @@ services:
     working_dir: /usr/src/app
     restart: always
     environment:
-      MONGO_URI: mongodb://mongo1:27017,mongo2:27018,mongo3:27019/oz-tech-map-prod?replicaSet=rs0
+      MONGO_URI: mongodb://host.docker.internal:27017,host.docker.internal:27018,host.docker.internal:27019/oz-tech-map
     build:
       context: .
       dockerfile: Dockerfile
