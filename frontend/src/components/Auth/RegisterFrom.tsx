@@ -1,10 +1,11 @@
 import React from "react";
 import { Form, Input, Button, notification } from "antd";
+import { RegisterUser } from "@app/services/Auth/types";
 
 export const RegisterForm: React.FC = () => {
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<RegisterUser>();
 
-  const onFinish = (values: any) => {
+  const onFinish = (values: RegisterUser) => {
     console.log("Form submitted:", values);
     notification.success({
       message: "Registration Successful",
@@ -12,7 +13,9 @@ export const RegisterForm: React.FC = () => {
     });
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const validatePassword = ({ getFieldValue }: any) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     validator(_: any, value: string) {
       if (!value || getFieldValue("password") === value) {
         return Promise.resolve();
