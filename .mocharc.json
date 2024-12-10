@@ -4,6 +4,7 @@
         "tsconfig-paths/register"
     ],
     "spec": "src/**/*.spec.ts",
+    "timeout": 10000,
     "exit": true,
     "watch": true,
     "watch-files": [
