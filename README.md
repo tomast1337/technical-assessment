@@ -54,6 +54,9 @@ Para verificar a cobertura de testes execute o comando
 
 ```bash
 pnpm test:cov
+# ou
+pnpm test:e2e:cov
+# para verificar a cobertura dos testes de integração
 ```
 
 Existe um arquivo `docker-compose.dev.yml` que pode ser utilizado para rodar apenas o mongodb em ambiente de desenvolvimento e testes e2e do servidor
