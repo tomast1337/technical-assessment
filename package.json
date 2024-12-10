@@ -10,6 +10,7 @@
         "test:e2e": "mocha --config .mocharc.e2e.json",
         "test:e2e:watch": "mocha --config .mocharc.e2e.json --watch",
         "test:cov": "nyc mocha --config .mocharc.unit.json",
+        "test:cov:e2e": "nyc mocha --config .mocharc.e2e.json",
         "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
         "format": "prettier --write \"src/**/*.ts\""
     },
