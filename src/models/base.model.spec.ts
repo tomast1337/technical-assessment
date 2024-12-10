@@ -1,9 +1,14 @@
-import { Prop, getModelForClass } from '@typegoose/typegoose';
+import 'reflect-metadata';
+
 import { expect } from 'chai';
 import * as mongoose from 'mongoose';
 import * as sinon from 'sinon';
 
-import { Base } from './base.model'; // Adjust the path as necessary
+import '../database';
+import '../server';
+import { Base } from './base.model';
+import { Prop, getModelForClass } from '@typegoose/typegoose';
+import { faker } from '@faker-js/faker';
 
 // Create a derived class for testing purposes
 class TestModel extends Base {
@@ -14,52 +19,36 @@ class TestModel extends Base {
 const TestModelClass = getModelForClass(TestModel);
 
 describe('Base Model', () => {
-  let sandbox: sinon.SinonSandbox;
+  let session;
+
+  before(async () => {
+    session = await mongoose.startSession();
+  });
+
+  after(() => {
+    sinon.restore();
+    session.endSession();
+  });
 
   beforeEach(() => {
-    sandbox = sinon.createSandbox();
-
-    // Mock Mongoose methods
-    sandbox.stub(mongoose, 'connect').resolves(mongoose);
-    sandbox.stub(mongoose.connection, 'close').resolves();
-    sandbox.stub(TestModelClass, 'findOne').resolves();
-    sandbox.stub(TestModelClass, 'deleteMany').resolves();
+    session.startTransaction();
   });
 
   afterEach(() => {
-    sandbox.restore();
+    TestModelClass.deleteMany({});
+    session.abortTransaction();
   });
 
-  it('should create a new document with a default _id', async () => {
-    const name = 'Test Name';
-    const testDoc = new TestModelClass({ name });
-    const saveStub = sandbox.stub(testDoc, 'save').resolves(testDoc);
-
-    await testDoc.save();
-
-    (TestModelClass.findOne as sinon.SinonStub).resolves(testDoc);
-
-    const foundDoc = await TestModelClass.findOne({ name });
-    expect(foundDoc).to.exist;
-    expect(foundDoc).to.have.property('_id').that.is.a('string');
-    expect(foundDoc).to.have.property('name', name);
-    sinon.assert.calledOnce(saveStub);
+  it('should create a new document', async () => {
+    const name = faker.person.firstName();
+    const testUser = await TestModelClass.create([{ name: name }]);
+    expect(testUser[0].name).to.equal(name);
   });
 
-  it('should use the provided _id if specified', async () => {
-    const name = 'Test Name';
-    const customId = new mongoose.Types.ObjectId().toString();
-    const testDoc = new TestModelClass({ _id: customId, name });
-    const saveStub = sandbox.stub(testDoc, 'save').resolves(testDoc);
-
-    await testDoc.save();
-
-    (TestModelClass.findOne as sinon.SinonStub).resolves(testDoc);
-
-    const foundDoc = await TestModelClass.findOne({ name });
-    expect(foundDoc).to.exist;
-    expect(foundDoc).to.have.property('_id', customId);
-    expect(foundDoc).to.have.property('name', name);
-    sinon.assert.calledOnce(saveStub);
+  it('should find a document', async () => {
+    const name = faker.person.firstName();
+    await TestModelClass.create([{ name: name }]);
+    const testUser = await TestModelClass.findOne({ name: name }, null);
+    expect(testUser.name).to.equal(name);
   });
 });

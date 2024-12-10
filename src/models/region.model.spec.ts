@@ -1,35 +1,51 @@
-import { getModelForClass } from '@typegoose/typegoose';
+import 'reflect-metadata';
+
 import { expect } from 'chai';
 import * as mongoose from 'mongoose';
-import { Types } from 'mongoose';
 import * as sinon from 'sinon';
 
-import { Region } from './region.model';
+import { faker } from '@faker-js/faker';
+import { RegionModel, UserModel } from '.';
+import '../database';
+import GeoLib from '../lib';
+import '../server';
 
-import { UserModel } from './index';
+describe('Region model', () => {
+  let session;
+  const geoLibStub: Partial<typeof GeoLib> = {};
 
-const RegionModel = getModelForClass(Region);
+  before(async () => {
+    geoLibStub.getAddressFromCoordinates = sinon
+      .stub(GeoLib, 'getAddressFromCoordinates')
+      .resolves(faker.location.streetAddress({ useFullAddress: true }));
 
-describe('Region Model', () => {
-  let sandbox: sinon.SinonSandbox;
-  let userFindOneStub: sinon.SinonStub;
+    geoLibStub.getCoordinatesFromAddress = sinon
+      .stub(GeoLib, 'getCoordinatesFromAddress')
+      .resolves({
+        lat: faker.location.latitude(),
+        lng: faker.location.longitude(),
+      });
 
-  beforeEach(() => {
-    sandbox = sinon.createSandbox();
-
-    // Mock Mongoose methods
-    sandbox.stub(mongoose, 'connect').resolves(mongoose);
-    sandbox.stub(mongoose.connection, 'close').resolves();
-
-    userFindOneStub = sandbox.stub(UserModel, 'findOne').resolves();
+    session = await mongoose.startSession();
   });
 
-  afterEach(() => {
-    sandbox.restore();
+  after(async () => {
+    sinon.restore();
+    await session.endSession();
+  });
+
+  beforeEach(async () => {
+    await session.startTransaction();
+  });
+
+  afterEach(async () => {
+    await RegionModel.deleteMany({});
+    await UserModel.deleteMany({});
+    await session.abortTransaction();
   });
 
   it('should create a new region with a default _id', async () => {
-    const name = 'Test Region';
+    const name = faker.location.city();
 
     const coordinates: [number, number][][] = [
       [
@@ -39,62 +55,27 @@ describe('Region Model', () => {
       ],
     ];
 
-    const user = new Types.ObjectId().toString();
-    const regionInstance = new RegionModel({ name, coordinates, user });
+    const user = await UserModel.create({
+      name: faker.person.firstName(),
+      email: faker.internet.email(),
+      password: faker.internet.password(),
+      address: faker.location.streetAddress,
+    });
 
-    const saveStub = sandbox
-      .stub(regionInstance, 'save')
-      .resolves(regionInstance);
-
-    await regionInstance.save();
-
-    sandbox.stub(RegionModel, 'findOne').resolves(regionInstance);
-
-    const foundRegion = await RegionModel.findOne({ name });
-    expect(foundRegion).to.exist;
-    expect(foundRegion!._id.toString()).to.be.a('string');
-    expect(foundRegion).to.have.property('name', name);
-    sinon.assert.calledOnce(saveStub);
-  });
-
-  it('should use the provided _id if specified', async () => {
-    const name = 'Test Region';
-
-    const coordinates: [number, number][][] = [
-      [
-        [10, 20],
-        [30, 40],
-        [50, 60],
-      ],
-    ];
-
-    const user = new Types.ObjectId().toString();
-    const customId = new Types.ObjectId().toString();
-
-    const regionInstance = new RegionModel({
-      _id: customId,
+    await RegionModel.create({
       name,
       coordinates,
       user,
     });
 
-    const saveStub = sandbox
-      .stub(regionInstance, 'save')
-      .resolves(regionInstance);
-
-    await regionInstance.save();
-
-    sandbox.stub(RegionModel, 'findOne').resolves(regionInstance);
-
     const foundRegion = await RegionModel.findOne({ name });
     expect(foundRegion).to.exist;
-    expect(foundRegion!._id.toString()).to.equal(customId);
+    expect(foundRegion!._id.toString()).to.be.a('string');
     expect(foundRegion).to.have.property('name', name);
-    sinon.assert.calledOnce(saveStub);
   });
-
-  it("should add the region to the user's regions array", async () => {
-    const name = 'Test Region';
+  it('should use the provided _id if specified', async () => {
+    const name = faker.location.city();
+    const _id = new mongoose.Types.ObjectId().toString();
 
     const coordinates: [number, number][][] = [
       [
@@ -104,29 +85,64 @@ describe('Region Model', () => {
       ],
     ];
 
-    const user = 'test-user-id';
-    const regionInstance = new RegionModel({ name, coordinates, user });
-
-    const saveStub = sandbox
-      .stub(regionInstance, 'save')
-      .resolves(regionInstance);
-
-    const userInstance = new UserModel({
-      _id: user,
-      name: 'Test User',
-      email: 'test@example.com',
-      password: 'password',
-      regions: [regionInstance._id.toString()],
-    });
-
-    userFindOneStub.resolves(userInstance);
-
-    const userSaveStub = sandbox
-      .stub(userInstance, 'save')
-      .resolves(userInstance);
+    const user = new mongoose.Types.ObjectId().toString();
+    const regionInstance = new RegionModel({ name, coordinates, user, _id });
 
     await regionInstance.save();
 
-    expect(userInstance.regions).to.include(regionInstance._id.toString());
+    const foundRegion = await RegionModel.findOne({ name });
+    expect(foundRegion).to.exist;
+    expect(foundRegion!._id.toString()).to.equal(_id);
+    expect(foundRegion).to.have.property('name', name);
+  });
+  it("should add the region to the user's regions array", async () => {
+    const name = faker.location.city();
+    const coordinates: [number, number][][] = [
+      [
+        [10, 20],
+        [30, 40],
+        [50, 60],
+      ],
+    ];
+    const user = await UserModel.create({
+      name: faker.person.firstName(),
+      email: faker.internet.email(),
+      password: faker.internet.password(),
+      address: faker.location.streetAddress(),
+    });
+
+    const userId = user._id.toString();
+
+    const regionInstance = new RegionModel({ name, coordinates, user: userId });
+    await regionInstance.save();
+
+    const foundUser = await UserModel.findById(userId);
+    expect(foundUser).to.exist;
+    expect(foundUser!.regions).to.include(regionInstance._id);
+  });
+  it("should add the region to the user's regions array", async () => {
+    const name = faker.location.city();
+    const coordinates: [number, number][][] = [
+      [
+        [10, 20],
+        [30, 40],
+        [50, 60],
+      ],
+    ];
+    const user = await UserModel.create({
+      name: faker.person.firstName(),
+      email: faker.internet.email(),
+      password: faker.internet.password(),
+      address: faker.location.streetAddress(),
+    });
+
+    const userId = user._id.toString();
+
+    const regionInstance = new RegionModel({ name, coordinates, user: userId });
+    await regionInstance.save();
+
+    const foundUser = await UserModel.findById(userId);
+    expect(foundUser).to.exist;
+    expect(foundUser!.regions).to.include(regionInstance._id);
   });
 });
