@@ -7,6 +7,7 @@ import * as swaggerUi from 'swagger-ui-express';
 
 import { env } from '@config/index';
 import { authRouter } from '@controllers/auth.controller';
+import { regionActionsRouter } from '@controllers/region-actions.controller';
 import { regionRouter } from '@controllers/region.controller';
 import { userRouter } from '@controllers/user.controller';
 
@@ -49,17 +50,11 @@ app.use('/api', router);
 
 router.use('/auth', authRouter);
 
-router.use(
-  '/user',
-  passport.authenticate('jwt', { session: false }),
-  userRouter,
-);
+router.use('/user', userRouter);
 
-router.use(
-  '/region',
-  passport.authenticate('jwt', { session: false }),
-  regionRouter,
-);
+router.use('/region', regionRouter);
+
+router.use('/region-actions', regionActionsRouter);
 
 app.use(
   '/api-docs',
