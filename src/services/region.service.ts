@@ -73,6 +73,47 @@ class RegionService {
 
     return PageDto.from(regions, total, page, limit);
   }
+
+  async getRegionsContainingPoint(point: [number, number]) {
+    const regions = await RegionModel.find({
+      geometry: {
+        $geoIntersects: {
+          $geometry: {
+            type: 'Point',
+            coordinates: point,
+          },
+        },
+      },
+    });
+
+    return regions;
+  }
+
+  async getRegionsNearPoint(
+    point: [number, number],
+    maxDistance: number,
+    userId?: string,
+  ) {
+    const query: any = {
+      geometry: {
+        $near: {
+          $geometry: {
+            type: 'Point',
+            coordinates: point,
+          },
+          $maxDistance: maxDistance,
+        },
+      },
+    };
+
+    if (userId) {
+      query.user = { $ne: userId };
+    }
+
+    const regions = await RegionModel.find(query);
+
+    return regions;
+  }
 }
 
 export default new RegionService();
