@@ -1,11 +1,12 @@
+import { Request, Response, Router } from 'express';
+import { StatusCodes } from 'http-status-codes';
+import passport = require('passport');
+
 import { validationBodyMiddleware } from '@middlewares/validationMiddleware';
 import AuthService, { DecodedTokenT } from '@services/auth.service';
 import { LoginUserDto } from '@views/LoginUser.dto';
 import { RegisterUserDto } from '@views/RegisterUser.dto';
 import { UpdatePasswordDto } from '@views/UpdatePassword.dto';
-import { Request, Response, Router } from 'express';
-import { StatusCodes } from 'http-status-codes';
-import passport = require('passport');
 
 const { RefreshToken, loginUser, registerUser, updatePassword } = AuthService;
 
@@ -59,7 +60,9 @@ authRouter.post(
       const result = await registerUser({ name, email, password, address });
       res.status(StatusCodes.OK).json(result);
     } catch (error) {
-      res.status(StatusCodes.BAD_REQUEST).json({ message: error.message });
+      res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: (error as Error).message });
     }
   },
 );
@@ -100,7 +103,9 @@ authRouter.post(
       const result = await loginUser({ email, password });
       res.status(StatusCodes.OK).json(result);
     } catch (error) {
-      res.status(StatusCodes.BAD_REQUEST).json({ message: error.message });
+      res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: (error as Error).message });
     }
   },
 );
@@ -142,7 +147,9 @@ authRouter.put(
       const result = await updatePassword(id, password);
       res.status(StatusCodes.OK).json(result);
     } catch (error) {
-      res.status(StatusCodes.BAD_REQUEST).json({ message: error.message });
+      res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: (error as Error).message });
     }
   },
 );
@@ -172,6 +179,8 @@ authRouter.post('/refresh-token', async (req: Request, res: Response) => {
     const result = await RefreshToken(refreshToken);
     res.status(StatusCodes.OK).json(result);
   } catch (error) {
-    res.status(StatusCodes.BAD_REQUEST).json({ message: error.message });
+    res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: (error as Error).message });
   }
 });

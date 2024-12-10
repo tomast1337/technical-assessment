@@ -1,3 +1,7 @@
+import { Request, Response, Router } from 'express';
+import { StatusCodes } from 'http-status-codes';
+import passport from 'passport';
+
 import {
   validationBodyMiddleware,
   validationQueryMiddleware,
@@ -6,9 +10,6 @@ import { User } from '@models/user.model';
 import UserService from '@services/user.service';
 import { PagingDto } from '@views/Paging.dto';
 import { UpdateUserDto } from '@views/UpdateUser.dto';
-import { Request, Response, Router } from 'express';
-import { StatusCodes } from 'http-status-codes';
-import * as passport from 'passport';
 
 const { deleteUser, getUserById, getUsers, updateUser } = UserService;
 
@@ -63,7 +64,9 @@ userRouter.get(
       const foundUser = await getUserById(user, id);
       res.status(StatusCodes.OK).json(foundUser);
     } catch (error) {
-      res.status(StatusCodes.BAD_REQUEST).json({ message: error.message });
+      res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: (error as Error).message });
     }
   },
 );
@@ -110,7 +113,9 @@ userRouter.put(
       const updatedUser = await updateUser(user, id, body);
       res.status(StatusCodes.OK).json(updatedUser);
     } catch (error) {
-      res.status(StatusCodes.BAD_REQUEST).json({ message: error.message });
+      res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: (error as Error).message });
     }
   },
 );
@@ -140,7 +145,9 @@ userRouter.delete(
       await deleteUser(user, id);
       res.status(StatusCodes.OK).json({ message: 'User deleted successfully' });
     } catch (error) {
-      res.status(StatusCodes.BAD_REQUEST).json({ message: error.message });
+      res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: (error as Error).message });
     }
   },
 );
@@ -216,7 +223,9 @@ userRouter.get(
       const users = await getUsers(query);
       res.status(StatusCodes.OK).json(users);
     } catch (error) {
-      res.status(StatusCodes.BAD_REQUEST).json({ message: error.message });
+      res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: (error as Error).message });
     }
   },
 );

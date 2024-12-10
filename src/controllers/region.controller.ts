@@ -1,9 +1,10 @@
+import { Request, Response, Router } from 'express';
+import { StatusCodes } from 'http-status-codes';
+import passport from 'passport';
+
 import { validationBodyMiddleware } from '@middlewares/validationMiddleware';
 import RegionService from '@services/region.service';
 import { RegionDto } from '@views/Region.dto';
-import { Request, Response, Router } from 'express';
-import { StatusCodes } from 'http-status-codes';
-import * as passport from 'passport';
 
 const { createRegion, getRegionById, updateRegion, deleteRegion, getRegions } =
   RegionService;
@@ -57,7 +58,9 @@ regionRouter.post(
       const region = await createRegion(user._id, req.body);
       res.status(StatusCodes.CREATED).json(region);
     } catch (error) {
-      res.status(StatusCodes.BAD_REQUEST).json({ message: error.message });
+      res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: (error as Error).message });
     }
   },
 );
@@ -96,7 +99,9 @@ regionRouter.get(
       const region = await getRegionById(user._id, id);
       res.status(StatusCodes.OK).json(region);
     } catch (error) {
-      res.status(StatusCodes.NOT_FOUND).json({ message: error.message });
+      res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: (error as Error).message });
     }
   },
 );
@@ -151,7 +156,9 @@ regionRouter.put(
       const region = await updateRegion(user._id, id, req.body);
       res.status(StatusCodes.OK).json(region);
     } catch (error) {
-      res.status(StatusCodes.NOT_FOUND).json({ message: error.message });
+      res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: (error as Error).message });
     }
   },
 );
@@ -193,7 +200,9 @@ regionRouter.delete(
         .status(StatusCodes.OK)
         .json({ message: 'Region deleted successfully' });
     } catch (error) {
-      res.status(StatusCodes.NOT_FOUND).json({ message: error.message });
+      res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: (error as Error).message });
     }
   },
 );
@@ -239,7 +248,9 @@ regionRouter.get(
       const regions = await getRegions(user._id);
       res.status(StatusCodes.OK).json(regions);
     } catch (error) {
-      res.status(StatusCodes.BAD_REQUEST).json({ message: error.message });
+      res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: (error as Error).message });
     }
   },
 );
