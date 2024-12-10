@@ -1,261 +1,161 @@
-import { faker } from '@faker-js/faker';
-import { RegionModel, UserModel } from '@models/index';
-import RegionService from '@services/region.service';
-import { RegionDto } from '@views/Region.dto';
 import { expect } from 'chai';
-import * as mongoose from 'mongoose';
-import { Types } from 'mongoose';
-import * as sinon from 'sinon';
+import sinon from 'sinon';
 
-import GeoLib from '../lib';
+import { RegionDto } from '@app/views/Region.dto';
+import { RegionModel } from '@models/index';
 
-describe('Region Service', () => {
-  let session;
-  let sandbox: sinon.SinonSandbox;
-  const geoLibStub: Partial<typeof GeoLib> = {};
+import RegionService from './region.service';
 
-  before(async () => {
-    sandbox = sinon.createSandbox();
-    session = await mongoose.startSession();
+describe('RegionService', () => {
+  let createStub: sinon.SinonStub;
+  let findOneStub: sinon.SinonStub;
+  let findOneAndUpdateStub: sinon.SinonStub;
+  let findOneAndDeleteStub: sinon.SinonStub;
+  let findStub: sinon.SinonStub;
 
-    // Mock GeoLib methods
-    geoLibStub.getAddressFromCoordinates = sinon
-      .stub(GeoLib, 'getAddressFromCoordinates')
-      .resolves(faker.location.streetAddress({ useFullAddress: true }));
-
-    geoLibStub.getCoordinatesFromAddress = sinon
-      .stub(GeoLib, 'getCoordinatesFromAddress')
-      .resolves({
-        lat: faker.location.latitude(),
-        lng: faker.location.longitude(),
-      });
+  beforeEach(() => {
+    createStub = sinon.stub(RegionModel, 'create');
+    findOneStub = sinon.stub(RegionModel, 'findOne');
+    findOneAndUpdateStub = sinon.stub(RegionModel, 'findOneAndUpdate');
+    findOneAndDeleteStub = sinon.stub(RegionModel, 'findOneAndDelete');
+    findStub = sinon.stub(RegionModel, 'find');
   });
 
-  after(async () => {
+  afterEach(() => {
     sinon.restore();
-    await session.endSession();
-    await mongoose.disconnect();
-  });
-
-  beforeEach(async () => {
-    await session.startTransaction();
-  });
-
-  afterEach(async () => {
-    await UserModel.deleteMany({});
-    await session.abortTransaction();
   });
 
   describe('createRegion', () => {
     it('should create a new region', async () => {
-      const userId = new Types.ObjectId().toString();
-
-      const createRegionDto: RegionDto = {
+      const regionDto: RegionDto = {
         name: 'Test Region',
         coordinates: [
-          [
-            [10, 20],
-            [30, 40],
-            [50, 60],
-          ],
+          [25.774, -80.19],
+          [18.466, -66.118],
+          [32.321, -64.757],
         ],
       };
 
-      const region = await RegionService.createRegion(userId, createRegionDto);
+      const createdRegion = { ...regionDto, user: 'userId' };
+      createStub.resolves(createdRegion);
 
-      expect(region).to.have.property('name', createRegionDto.name);
+      const result = await RegionService.createRegion('userId', regionDto);
 
-      expect(region).to.have.property(
-        'coordinates',
-        createRegionDto.coordinates,
-      );
-
-      expect(region).to.have.property('user', userId);
+      expect(result).to.deep.equal(createdRegion);
+      expect(createStub.calledOnce).to.be.true;
     });
   });
 
   describe('getRegionById', () => {
-    it('should return a region by ID', async () => {
-      const userId = new Types.ObjectId().toString();
+    it('should return a region if found', async () => {
+      const region = { _id: 'regionId', name: 'Test Region', user: 'userId' };
+      findOneStub.resolves(region);
 
-      const region = await RegionModel.create({
-        name: 'Test Region',
-        coordinates: [
-          [
-            [10, 20],
-            [30, 40],
-            [50, 60],
-          ],
-        ],
-        user: userId,
-      });
+      const result = await RegionService.getRegionById('userId', 'regionId');
 
-      const foundRegion = await RegionService.getRegionById(
-        userId,
-        region._id.toString(),
-      );
-
-      expect(foundRegion).to.exist;
-      expect(foundRegion._id.toString()).to.equal(region._id.toString());
-      expect(foundRegion.name).to.equal(region.name);
+      expect(result).to.deep.equal(region);
+      expect(findOneStub.calledOnce).to.be.true;
     });
 
     it('should throw an error if the region is not found', async () => {
-      const userId = new Types.ObjectId().toString();
-      const regionId = new Types.ObjectId().toString();
+      findOneStub.resolves(null);
 
       try {
-        await RegionService.getRegionById(userId, regionId);
+        await RegionService.getRegionById('userId', 'regionId');
       } catch (error) {
-        expect(error).to.have.property(
-          'message',
+        expect((error as any).message).to.equal(
           'Region not found or not authorized',
         );
       }
+
+      expect(findOneStub.calledOnce).to.be.true;
     });
   });
 
   describe('updateRegion', () => {
-    it('should update a region by ID', async () => {
-      const userId = new Types.ObjectId().toString();
-
-      const region = await RegionModel.create({
-        name: 'Test Region',
-        coordinates: [
-          [
-            [10, 20],
-            [30, 40],
-            [50, 60],
-          ],
-        ],
-        user: userId,
-      });
-
-      const updateRegionDto: RegionDto = {
+    it('should update a region if found', async () => {
+      const regionDto: RegionDto = {
         name: 'Updated Region',
         coordinates: [
-          [
-            [15, 25],
-            [35, 45],
-            [55, 65],
-          ],
+          [25.774, -80.19],
+          [18.466, -66.118],
+          [32.321, -64.757],
         ],
       };
 
-      const updatedRegion = await RegionService.updateRegion(
-        userId,
-        region._id.toString(),
-        updateRegionDto,
+      const updatedRegion = { _id: 'regionId', ...regionDto, user: 'userId' };
+      findOneAndUpdateStub.resolves(updatedRegion);
+
+      const result = await RegionService.updateRegion(
+        'userId',
+        'regionId',
+        regionDto,
       );
 
-      expect(updatedRegion).to.exist;
-      expect(updatedRegion._id.toString()).to.equal(region._id.toString());
-      expect(updatedRegion.name).to.equal(updateRegionDto.name);
+      expect(result).to.deep.equal(updatedRegion);
+      expect(findOneAndUpdateStub.calledOnce).to.be.true;
     });
 
     it('should throw an error if the region is not found', async () => {
-      const userId = new Types.ObjectId().toString();
-      const regionId = new Types.ObjectId().toString();
-
-      const updateRegionDto: RegionDto = {
-        name: 'Updated Region',
-        coordinates: [
-          [
-            [15, 25],
-            [35, 45],
-            [55, 65],
-          ],
-        ],
-      };
+      findOneAndUpdateStub.resolves(null);
 
       try {
-        await RegionService.updateRegion(userId, regionId, updateRegionDto);
+        await RegionService.updateRegion('userId', 'regionId', {
+          name: 'Updated Region',
+          coordinates: [
+            [25.774, -80.19],
+            [18.466, -66.118],
+            [32.321, -64.757],
+          ],
+        });
       } catch (error) {
-        expect(error).to.have.property(
-          'message',
+        expect((error as any).message).to.equal(
           'Region not found or not authorized',
         );
       }
+
+      expect(findOneAndUpdateStub.calledOnce).to.be.true;
     });
   });
 
   describe('deleteRegion', () => {
-    it('should delete a region by ID', async () => {
-      const userId = new Types.ObjectId().toString();
+    it('should delete a region if found', async () => {
+      const region = { _id: 'regionId', name: 'Test Region', user: 'userId' };
+      findOneAndDeleteStub.resolves(region);
 
-      const region = await RegionModel.create({
-        name: 'Test Region',
-        coordinates: [
-          [
-            [10, 20],
-            [30, 40],
-            [50, 60],
-          ],
-        ],
-        user: userId,
-      });
+      const result = await RegionService.deleteRegion('userId', 'regionId');
 
-      const deletedRegion = await RegionService.deleteRegion(
-        userId,
-        region._id.toString(),
-      );
-
-      expect(deletedRegion).to.exist;
-
-      expect(deletedRegion.value._id.toString()).to.equal(
-        region._id.toString(),
-      );
+      expect(result).to.deep.equal(region);
+      expect(findOneAndDeleteStub.calledOnce).to.be.true;
     });
 
     it('should throw an error if the region is not found', async () => {
-      const userId = new Types.ObjectId().toString();
-      const regionId = new Types.ObjectId().toString();
+      findOneAndDeleteStub.resolves(null);
 
       try {
-        await RegionService.deleteRegion(userId, regionId);
+        await RegionService.deleteRegion('userId', 'regionId');
       } catch (error) {
-        expect(error).to.have.property(
-          'message',
+        expect((error as any).message).to.equal(
           'Region not found or not authorized',
         );
       }
+
+      expect(findOneAndDeleteStub.calledOnce).to.be.true;
     });
   });
 
   describe('getRegions', () => {
-    it('should return a list of regions for a user', async () => {
-      const userId = new Types.ObjectId().toString();
+    it('should return all regions for a user', async () => {
+      const regions = [
+        { _id: 'regionId', name: 'Test Region', user: 'userId' },
+      ];
 
-      await RegionModel.insertMany([
-        {
-          name: 'Test Region 1',
-          coordinates: [
-            [
-              [10, 20],
-              [30, 40],
-              [50, 60],
-            ],
-          ],
-          user: userId,
-        },
-        {
-          name: 'Test Region 2',
-          coordinates: [
-            [
-              [15, 25],
-              [35, 45],
-              [55, 65],
-            ],
-          ],
-          user: userId,
-        },
-      ]);
+      findStub.resolves(regions);
 
-      const regions = await RegionService.getRegions(userId);
+      const result = await RegionService.getRegions('userId');
 
-      expect(regions).to.have.lengthOf(2);
-      expect(regions[0]).to.have.property('name', 'Test Region 1');
-      expect(regions[1]).to.have.property('name', 'Test Region 2');
+      expect(result).to.deep.equal(regions);
+      expect(findStub.calledOnce).to.be.true;
     });
   });
 });

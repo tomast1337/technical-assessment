@@ -3,13 +3,12 @@ import { RegionDto } from '@views/Region.dto';
 
 class RegionService {
   async createRegion(userId: string, createRegionDto: RegionDto) {
-    const region = new RegionModel({
+    const createdRegion = await RegionModel.create({
       ...createRegionDto,
       user: userId,
     });
 
-    await region.save();
-    return region;
+    return createdRegion;
   }
 
   async getRegionById(userId: string, regionId: string) {

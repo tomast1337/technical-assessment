@@ -1,139 +1,237 @@
-import { faker } from '@faker-js/faker';
-import { UserModel } from '@models/index';
-import * as bcrypt from 'bcryptjs';
+import bcrypt from 'bcryptjs';
 import { expect } from 'chai';
-import * as mongoose from 'mongoose';
-import * as sinon from 'sinon';
+import jwt from 'jsonwebtoken';
+import sinon from 'sinon';
 
-import '../database';
-import GeoLib from '../lib';
-import '../server';
+import lib from '@app/lib';
+import { UserModel } from '@models/index';
+
 import AuthService from './auth.service';
 
-const { registerUser, loginUser, updatePassword } = AuthService;
+describe('AuthService', () => {
+  let findOneStub: sinon.SinonStub;
+  let createStub: sinon.SinonStub;
+  let hashStub: sinon.SinonStub;
+  let compareStub: sinon.SinonStub;
+  let signStub: sinon.SinonStub;
+  let verifyStub: sinon.SinonStub;
+  let updateOneStub: sinon.SinonStub;
 
-describe('Auth Service', () => {
-  let session;
-  let sandbox: sinon.SinonSandbox;
-  const geoLibStub: Partial<typeof GeoLib> = {};
-
-  before(async () => {
-    sandbox = sinon.createSandbox();
-    session = await mongoose.startSession();
-
-    // Mock GeoLib methods
-    geoLibStub.getAddressFromCoordinates = sinon
-      .stub(GeoLib, 'getAddressFromCoordinates')
-      .resolves(faker.location.streetAddress({ useFullAddress: true }));
-
-    geoLibStub.getCoordinatesFromAddress = sinon
-      .stub(GeoLib, 'getCoordinatesFromAddress')
-      .resolves({
-        lat: faker.location.latitude(),
-        lng: faker.location.longitude(),
-      });
+  beforeEach(() => {
+    findOneStub = sinon.stub(UserModel, 'findOne');
+    createStub = sinon.stub(UserModel, 'create');
+    hashStub = sinon.stub(bcrypt, 'hash');
+    compareStub = sinon.stub(bcrypt, 'compare');
+    signStub = sinon.stub(jwt, 'sign');
+    verifyStub = sinon.stub(jwt, 'verify');
+    updateOneStub = sinon.stub(UserModel, 'updateOne');
   });
 
-  after(async () => {
+  afterEach(() => {
     sinon.restore();
-    await session.endSession();
-  });
-
-  beforeEach(async () => {
-    await session.startTransaction();
-  });
-
-  afterEach(async () => {
-    await UserModel.deleteMany({});
-    await session.abortTransaction();
   });
 
   describe('registerUser', () => {
     it('should register a new user', async () => {
-      const name = faker.person.firstName();
-      const email = faker.internet.email();
-      const password = faker.internet.password();
-      const address = faker.location.streetAddress({ useFullAddress: true });
+      findOneStub.resolves(null);
+      hashStub.resolves('hashedPassword');
+      createStub.resolves();
 
-      const result = await registerUser({ name, email, password, address });
+      const result = await AuthService.registerUser({
+        name: 'John Doe',
+        email: 'john@example.com',
+        password: 'password123',
+        address: '123 Main St',
+      });
 
-      expect(result).to.have.property(
-        'message',
-        'User registered successfully',
-      );
+      expect(result).to.deep.equal({ message: 'User registered successfully' });
+      expect(findOneStub.calledOnce).to.be.true;
+      expect(hashStub.calledOnce).to.be.true;
+      expect(createStub.calledOnce).to.be.true;
     });
 
     it('should throw an error if the user already exists', async () => {
-      const name = faker.person.firstName();
-      const email = faker.internet.email();
-      const password = faker.internet.password();
-      const address = faker.location.streetAddress({ useFullAddress: true });
-
-      await registerUser({ name, email, password, address });
+      findOneStub.resolves({});
 
       try {
-        await registerUser({ name, email, password, address });
+        await AuthService.registerUser({
+          name: 'John Doe',
+          email: 'john@example.com',
+          password: 'password123',
+          address: '123 Main St',
+        });
       } catch (error) {
-        expect(error).to.have.property('message', 'User already exists');
+        expect((error as any).message).to.equal('User already exists');
       }
+
+      expect(findOneStub.calledOnce).to.be.true;
+    });
+
+    it('should throw an error if both address and coordinates are provided', async () => {
+      findOneStub.resolves(null);
+
+      try {
+        await AuthService.registerUser({
+          name: 'John Doe',
+          email: 'john@example.com',
+          password: 'password123',
+          address: '123 Main St',
+          coordinates: [25.774, -80.19],
+        });
+      } catch (error) {
+        expect((error as any).message).to.equal(
+          'Either address or coordinates should be provided',
+        );
+      }
+
+      expect(findOneStub.calledOnce).to.be.true;
+    });
+
+    it('should throw an error if address is not provided and coordinates are invalid', async () => {
+      findOneStub.resolves(null);
+      sinon.stub(lib, 'getAddressFromCoordinates').resolves(null as any);
+
+      try {
+        await AuthService.registerUser({
+          name: 'John Doe',
+          email: 'john@example.com',
+          password: 'password123',
+          coordinates: [25.774, -80.19],
+        });
+      } catch (error) {
+        expect((error as any).message).to.equal('Address is required');
+      }
+
+      expect(findOneStub.calledOnce).to.be.true;
+      sinon.restore();
+    });
+
+    it('should throw an error if address is not provided and coordinates are not provided', async () => {
+      findOneStub.resolves(null);
+
+      try {
+        await AuthService.registerUser({
+          name: 'John Doe',
+          email: 'john@example.com',
+          password: 'password123',
+        });
+      } catch (error) {
+        expect((error as any).message).to.equal('Address is required');
+      }
+
+      expect(findOneStub.calledOnce).to.be.true;
     });
   });
 
   describe('loginUser', () => {
-    it('should login a user and return a token and refresh token', async () => {
-      const name = faker.person.firstName();
-      const email = faker.internet.email();
-      const password = faker.internet.password();
-      const address = faker.location.streetAddress({ useFullAddress: true });
+    it('should login a user and return tokens', async () => {
+      const user = { _id: '1', name: 'John Doe', password: 'hashedPassword' };
+      findOneStub.resolves(user);
+      compareStub.resolves(true);
 
-      await registerUser({ name, email, password, address });
+      signStub
+        .onFirstCall()
+        .returns('token')
+        .onSecondCall()
+        .returns('refreshToken');
 
-      const result = await loginUser({ email, password });
+      const result = await AuthService.loginUser({
+        email: 'john@example.com',
+        password: 'password123',
+      });
 
-      expect(result).to.have.property('token');
-      expect(result).to.have.property('refreshToken');
+      expect(result).to.deep.equal({
+        token: 'token',
+        refreshToken: 'refreshToken',
+      });
+
+      expect(findOneStub.calledOnce).to.be.true;
+      expect(compareStub.calledOnce).to.be.true;
+      expect(signStub.calledTwice).to.be.true;
     });
 
     it('should throw an error if the credentials are invalid', async () => {
-      const email = faker.internet.email();
-      const password = faker.internet.password();
+      findOneStub.resolves(null);
 
       try {
-        await loginUser({ email, password });
+        await AuthService.loginUser({
+          email: 'john@example.com',
+          password: 'password123',
+        });
       } catch (error) {
-        expect(error).to.have.property('message', 'Invalid credentials');
+        expect((error as any).message).to.equal('Invalid credentials');
       }
+
+      expect(findOneStub.calledOnce).to.be.true;
     });
   });
 
   describe('updatePassword', () => {
     it('should update the user password', async () => {
-      const name = faker.person.firstName();
-      const email = faker.internet.email();
-      const password = faker.internet.password();
-      const address = faker.location.streetAddress({ useFullAddress: true });
+      const user = { _id: '1', password: 'oldPassword' };
+      findOneStub.resolves(user);
+      hashStub.resolves('newHashedPassword');
+      updateOneStub.resolves();
 
-      await registerUser({ name, email, password, address });
+      const result = await AuthService.updatePassword('1', 'newPassword123');
 
-      const user = await UserModel.findOne({ email });
+      expect(result).to.deep.equal({
+        message: 'Password updated successfully',
+      });
 
-      const newPassword = faker.internet.password();
-      await updatePassword(user._id, newPassword);
-
-      const updatedUser = await UserModel.findById(user._id);
-      const isMatch = await bcrypt.compare(newPassword, updatedUser.password);
-
-      expect(isMatch).to.be.true;
+      expect(findOneStub.calledOnce).to.be.true;
+      expect(hashStub.calledOnce).to.be.true;
+      expect(updateOneStub.calledOnce).to.be.true;
     });
 
     it('should throw an error if the user is not found', async () => {
-      const newPassword = faker.internet.password();
+      findOneStub.resolves(null);
 
       try {
-        await updatePassword(faker.string.alphanumeric(10), newPassword);
+        await AuthService.updatePassword('1', 'newPassword123');
       } catch (error) {
-        expect(error).to.have.property('message', 'User not found');
+        expect((error as any).message).to.equal('User not found');
       }
+
+      expect(findOneStub.calledOnce).to.be.true;
+    });
+  });
+
+  describe('RefreshToken', () => {
+    it('should refresh the token and return new tokens', async () => {
+      const payload = { id: '1', name: 'John Doe' };
+      const user = { _id: '1', name: 'John Doe' };
+      verifyStub.resolves(payload);
+      findOneStub.resolves(user);
+
+      signStub
+        .onFirstCall()
+        .returns('newToken')
+        .onSecondCall()
+        .returns('newRefreshToken');
+
+      const result = await AuthService.RefreshToken('refreshToken');
+
+      expect(result).to.deep.equal({
+        token: 'newToken',
+        refreshToken: 'newRefreshToken',
+      });
+
+      expect(verifyStub.calledOnce).to.be.true;
+      expect(findOneStub.calledOnce).to.be.true;
+      expect(signStub.calledTwice).to.be.true;
+    });
+
+    it('should throw an error if the token is invalid', async () => {
+      verifyStub.throws(new Error('Invalid token'));
+
+      try {
+        await AuthService.RefreshToken('invalidToken');
+      } catch (error) {
+        expect((error as any).message).to.equal('Invalid token');
+      }
+
+      expect(verifyStub.calledOnce).to.be.true;
     });
   });
 });
