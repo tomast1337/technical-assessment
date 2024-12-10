@@ -22,22 +22,21 @@ import { StatusCodes } from 'http-status-codes';
 export function validationBodyMiddleware<T>(
   type: any,
 ): (req: Request, res: Response, next: NextFunction) => void {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
     const dto = plainToInstance(type, req.body);
 
-    validate(dto).then((errors: ValidationError[]) => {
-      if (errors.length > 0) {
-        const messages = errors.map((error: ValidationError) =>
-          Object.values(error.constraints || {}).join(', '),
-        );
+    const errors = await validate(dto);
+    if (errors.length > 0) {
+      const messages = errors.map((error: ValidationError) =>
+        Object.values(error.constraints || {}).join(', '),
+      );
 
-        res
-          .status(StatusCodes.BAD_REQUEST)
-          .json({ message: messages.join(', ') });
-      } else {
-        next();
-      }
-    });
+      res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: messages.join(', ') });
+    } else {
+      next();
+    }
   };
 }
 
@@ -71,21 +70,22 @@ export function validationBodyMiddleware<T>(
 export function validationQueryMiddleware<T>(
   type: any,
 ): (req: Request, res: Response, next: NextFunction) => void {
-  return (req: Request, res: Response, next: NextFunction) => {
-    const dto = plainToInstance(type, req.query);
-
-    validate(dto as object).then((errors: ValidationError[]) => {
-      if (errors.length > 0) {
-        const messages = errors.map((error: ValidationError) =>
-          Object.values(error.constraints || {}).join(', '),
-        );
-
-        res
-          .status(StatusCodes.BAD_REQUEST)
-          .json({ message: messages.join(', ') });
-      } else {
-        next();
-      }
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const dto = plainToInstance(type, req.query, {
+      enableImplicitConversion: true,
     });
+
+    const errors = await validate(dto as object);
+    if (errors.length > 0) {
+      const messages = errors.map((error: ValidationError) =>
+        Object.values(error.constraints || {}).join(', '),
+      );
+
+      res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ message: messages.join(', ') });
+    } else {
+      next();
+    }
   };
 }
