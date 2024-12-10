@@ -1,5 +1,4 @@
-import { Types } from 'mongoose';
-
+import logger from '@app/logger';
 import { PageDto } from '@app/views/Page.dto';
 import { PagingDto } from '@app/views/Paging.dto';
 import { RegionModel } from '@models/index';
@@ -7,12 +6,22 @@ import { RegionDto } from '@views/Region.dto';
 
 class RegionService {
   async createRegion(userId: string, createRegionDto: RegionDto) {
-    const createdRegion = await RegionModel.create({
-      ...createRegionDto,
-      user: new Types.ObjectId(userId),
-    });
+    try {
+      const data = {
+        name: createRegionDto.name,
+        geometry: {
+          type: createRegionDto.type,
+          coordinates: createRegionDto.coordinates,
+        },
+        user: userId,
+      };
 
-    return createdRegion;
+      const createdRegion = await RegionModel.create(data);
+
+      return createdRegion;
+    } catch (error) {
+      throw new Error('Failed to create region');
+    }
   }
 
   async getRegionById(userId: string, regionId: string) {
@@ -30,17 +39,22 @@ class RegionService {
     regionId: string,
     updateRegionDto: RegionDto,
   ) {
-    const region = await RegionModel.findOneAndUpdate(
-      { _id: regionId, user: userId },
-      updateRegionDto,
-      { new: true },
-    );
+    try {
+      const region = await RegionModel.findOneAndUpdate(
+        { _id: regionId, user: userId },
+        updateRegionDto,
+        { new: true },
+      );
 
-    if (!region) {
-      throw new Error('Region not found or not authorized');
+      if (!region) {
+        throw new Error('Region not found or not authorized');
+      }
+
+      return region;
+    } catch (error) {
+      logger.error('Error in updateRegion:', error);
+      throw new Error((error as any).message || 'Failed to update region');
     }
-
-    return region;
   }
 
   async deleteRegion(userId: string, regionId: string) {
@@ -64,14 +78,19 @@ class RegionService {
       sort[shortBy] = order ? 1 : -1;
     }
 
-    const regions = await RegionModel.find({ user: userId })
-      .sort(sort)
-      .skip((page - 1) * limit)
-      .limit(limit);
+    try {
+      const regions = await RegionModel.find({ user: userId })
+        .sort(sort)
+        .skip((page - 1) * limit)
+        .limit(limit);
 
-    const total = await RegionModel.countDocuments({ user: userId });
+      const total = await RegionModel.countDocuments({ user: userId });
 
-    return PageDto.from(regions, total, page, limit);
+      return PageDto.from(regions, total, page, limit);
+    } catch (error) {
+      console.error('Error fetching regions:', error);
+      throw new Error('Failed to fetch regions');
+    }
   }
 
   async getRegionsContainingPoint(point: [number, number]) {
