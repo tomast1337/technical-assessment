@@ -13,12 +13,8 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=strongPassword
     command: >
       bash -c "
-        chmod 400 /etc/mongodb-keyfile
-        mongod 
-        --replSet rs0 
-        --bind_ip 0.0.0.0 
-        --keyFile /etc/mongodb-keyfile 
-        --auth
+        chmod 400 /etc/mongodb-keyfile &&
+        mongod --replSet rs0 --bind_ip 0.0.0.0 --keyFile /etc/mongodb-keyfile --auth
       "
     networks:
       - mongodb_network
@@ -36,12 +32,8 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=strongPassword
     command: >
       bash -c "
-        chmod 400 /etc/mongodb-keyfile
-        mongod 
-        --replSet rs0 
-        --bind_ip 0.0.0.0 
-        --keyFile /etc/mongodb-keyfile 
-        --auth
+        chmod 400 /etc/mongodb-keyfile &&
+        mongod --replSet rs0 --bind_ip 0.0.0.0 --keyFile /etc/mongodb-keyfile --auth
       "
     networks:
       - mongodb_network
@@ -59,12 +51,8 @@ services:
       - MONGO_INITDB_ROOT_PASSWORD=strongPassword
     command: >
       bash -c "
-        chmod 400 /etc/mongodb-keyfile
-        mongod 
-        --replSet rs0 
-        --bind_ip 0.0.0.0 
-        --keyFile /etc/mongodb-keyfile 
-        --auth
+        chmod 400 /etc/mongodb-keyfile &&
+        mongod --replSet rs0 --bind_ip 0.0.0.0 --keyFile /etc/mongodb-keyfile --auth
       "
     networks:
       - mongodb_network
