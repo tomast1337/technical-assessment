@@ -4,7 +4,7 @@
 
 defina as variáveis de ambiente no arquivo .env ou no ambiente de execução
 
-```bash
+```ini
 MONGO_URI=mongodb://root:example@mongo:27021/oz-tech-test?authSource=admin # Substitua pelo seu caso necessário
 JWT_SECRET=A_JWT_SECRET
 JWT_EXPIRES_IN=1d
@@ -17,7 +17,7 @@ GOOGLE_MAPS_API_KEY=YOUR_GOOGLE_MAPS_API_KEY
 
 Execute o comando para instalar as dependências
 
-```bash
+```yaml
 pnpm install
 # ou
 yarn install
@@ -27,13 +27,13 @@ npm install
 
 Execute o comando para rodar o docker-compose com o mongodb
 
-```bash
+```yaml
 docker-compose up -d
 ```
 
 Execute o comando para rodar o projeto
 
-```bash
+```yaml
 pnpm dev
 # ou
 yarn dev
@@ -43,7 +43,7 @@ npm run dev
 
 Para rodar os testes execute o comando
 
-```bash
+```yaml
 pnpm test
 # ou
 pnpm test:e2e
@@ -52,7 +52,7 @@ pnpm test:e2e
 
 Para verificar a cobertura de testes execute o comando
 
-```bash
+```yaml
 pnpm test:cov
 # ou
 pnpm test:e2e:cov
@@ -61,7 +61,7 @@ pnpm test:e2e:cov
 
 Existe um arquivo `docker-compose.dev.yml` que pode ser utilizado para rodar apenas o mongodb em ambiente de desenvolvimento e testes e2e do servidor
 
-```bash
+```yaml
 docker-compose -f docker-compose.dev.yml up -d
 ```
 
