@@ -40,12 +40,20 @@ export const regionRouter = Router();
  *             properties:
  *               name:
  *                 type: string
- *               coordinates:
- *                 type: array
- *                 items:
- *                   type: array
- *                   items:
- *                     type: number
+ *               geometry:
+ *                 type: object
+ *                 properties:
+ *                   type:
+ *                     type: string
+ *                     enum: [Polygon]
+ *                   coordinates:
+ *                     type: array
+ *                     items:
+ *                       type: array
+ *                       items:
+ *                         type: array
+ *                         items:
+ *                           type: number
  *     responses:
  *       201:
  *         description: Region created successfully
@@ -57,8 +65,12 @@ regionRouter.post(
   passport.authenticate('jwt', { session: false }),
   validationBodyMiddleware(RegionDto),
   async (req: Request, res: Response) => {
+    console.log('Creating region sdasda:', req.body);
     const user = req.user as { _id: string };
     const body = req.body as RegionDto;
+
+    console.log('Creating region:', body);
+    console.log('User:', user);
 
     try {
       const region = await createRegion(user._id, body);
@@ -136,12 +148,20 @@ regionRouter.get(
  *             properties:
  *               name:
  *                 type: string
- *               coordinates:
- *                 type: array
- *                 items:
- *                   type: array
- *                   items:
- *                     type: number
+ *               geometry:
+ *                 type: object
+ *                 properties:
+ *                   type:
+ *                     type: string
+ *                     enum: [Polygon]
+ *                   coordinates:
+ *                     type: array
+ *                     items:
+ *                       type: array
+ *                       items:
+ *                         type: array
+ *                         items:
+ *                           type: number
  *     responses:
  *       200:
  *         description: Region updated successfully
@@ -211,7 +231,7 @@ regionRouter.delete(
     } catch (error) {
       res
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: (error as Error).message });
+        .json({ message: (error as Error).message || 'Unknown error' });
     }
   },
 );
@@ -288,7 +308,7 @@ regionRouter.get(
     } catch (error) {
       res
         .status(StatusCodes.BAD_REQUEST)
-        .json({ message: (error as Error).message });
+        .json({ message: (error as Error).message || 'Unknown error' });
     }
   },
 );
