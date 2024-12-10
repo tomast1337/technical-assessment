@@ -1,5 +1,9 @@
 import { Client } from '@googlemaps/google-maps-services-js';
+
 import { env } from './config';
+import logger from './logger';
+
+const loggerLocal = logger.child({ label: 'GeoLib' });
 
 type CoordinatesArr = [number, number];
 type CoordinatesObj = { lat: number; lng: number };
@@ -32,9 +36,14 @@ class GeoLib {
       if (response.data.results.length > 0) {
         return response.data.results[0].formatted_address;
       } else {
+        loggerLocal.error('No address found for the given coordinates');
         throw new Error('No address found for the given coordinates');
       }
     } catch (error) {
+      loggerLocal.error(
+        `Failed to get address from coordinates: ${error.message}`,
+      );
+
       throw new Error(
         `Failed to get address from coordinates: ${error.message}`,
       );
@@ -59,6 +68,10 @@ class GeoLib {
         throw new Error('No coordinates found for the given address');
       }
     } catch (error) {
+      loggerLocal.error(
+        `Failed to get coordinates from address: ${error.message}`,
+      );
+
       throw new Error(
         `Failed to get coordinates from address: ${error.message}`,
       );
