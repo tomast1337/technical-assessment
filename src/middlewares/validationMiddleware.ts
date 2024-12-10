@@ -19,7 +19,7 @@ import { StatusCodes } from 'http-status-codes';
  *   // Handle the request
  * });
  */
-export function validationBodyMiddleware<T>(
+export function validationBodyMiddleware<_T>(
   type: any,
 ): (req: Request, res: Response, next: NextFunction) => void {
   return async (req: Request, res: Response, next: NextFunction) => {
@@ -68,7 +68,7 @@ export function validationBodyMiddleware<T>(
  * @param res - The response object.
  * @param next - The next middleware function in the stack.
  */
-export function validationQueryMiddleware<T>(
+export function validationQueryMiddleware<_T>(
   type: any,
 ): (req: Request, res: Response, next: NextFunction) => void {
   return async (req: Request, res: Response, next: NextFunction) => {
