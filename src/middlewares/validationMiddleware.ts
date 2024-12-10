@@ -23,7 +23,9 @@ export function validationBodyMiddleware<_T>(
   type: any,
 ): (req: Request, res: Response, next: NextFunction) => void {
   return async (req: Request, res: Response, next: NextFunction) => {
-    const dto = plainToInstance(type, req.body);
+    const dto = plainToInstance(type, req.body, {
+      enableImplicitConversion: true,
+    });
 
     const errors = await validate(dto);
 
