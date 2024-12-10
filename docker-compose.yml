@@ -1,25 +1,55 @@
 version: '3.8'
 
 services:
-  mongo:
-    image: mongo:latest
-    container_name: oz-tech-test-mongo
+  mongo1:
+    container_name: oz-tech-test-mongo1
+    image: mongo:7.0
+    command: ['--replSet', 'rs0', '--bind_ip_all', '--port', '27017']
     ports:
-      - '27021:27017'
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
+      - 27017:27017
+    extra_hosts:
+      - 'host.docker.internal:172.17.0.1'
+    healthcheck:
+      test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'host.docker.internal:27017',priority:1},{_id:1,host:'host.docker.internal:27018',priority:0.5},{_id:2,host:'host.docker.internal:27019',priority:0.5}]}) }" | mongosh --port 27017 --quiet
+      interval: 5s
+      timeout: 30s
+      start_period: 0s
+      start_interval: 1s
+      retries: 30
     volumes:
-      - mongo-data:/data/db
-    networks:
-      - app-network
+      - 'mongo1_data:/data/db'
+      - 'mongo1_config:/data/configdb'
+
+  mongo2:
+    container_name: oz-tech-test-mongo2
+    image: mongo:7.0
+    command: ['--replSet', 'rs0', '--bind_ip_all', '--port', '27018']
+    ports:
+      - 27018:27018
+    extra_hosts:
+      - 'host.docker.internal:172.17.0.1'
+    volumes:
+      - 'mongo2_data:/data/db'
+      - 'mongo2_config:/data/configdb'
+
+  mongo3:
+    container_name: oz-tech-test-mongo3
+    image: mongo:7.0
+    command: ['--replSet', 'rs0', '--bind_ip_all', '--port', '27019']
+    ports:
+      - 27019:27019
+    extra_hosts:
+      - 'host.docker.internal:172.17.0.1'
+    volumes:
+      - 'mongo3_data:/data/db'
+      - 'mongo3_config:/data/configdb'
 
   app:
     container_name: oz-tech-test-app
     working_dir: /usr/src/app
     restart: always
     environment:
-      MONGO_URI: mongodb://root:example@mongo:27017/oz-tech-test?authSource=admin
+      MONGO_URI: mongodb://mongo1:27017,mongo2:27018,mongo3:27019/oz-tech-test?replicaSet=rs0
     build:
       context: .
       dockerfile: Dockerfile
@@ -33,7 +63,9 @@ services:
       - app-network
 
 volumes:
-  mongo-data:
+  mongo1-data:
+  mongo2-data:
+  mongo3-data:
 
 networks:
   app-network:
