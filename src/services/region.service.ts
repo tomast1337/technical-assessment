@@ -1,9 +1,9 @@
 import { Types } from 'mongoose';
 
+import { PageDto } from '@app/views/Page.dto';
 import { PagingDto } from '@app/views/Paging.dto';
 import { RegionModel } from '@models/index';
 import { RegionDto } from '@views/Region.dto';
-import { PageDto } from '@app/views/Page.dto';
 
 class RegionService {
   async createRegion(userId: string, createRegionDto: RegionDto) {

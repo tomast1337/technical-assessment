@@ -1,8 +1,8 @@
+import { PageDto } from '@app/views/Page.dto';
 import { UserModel } from '@models/index';
 import { User } from '@models/user.model';
 
 import { PagingDto } from '../views/Paging.dto';
-import { PageDto } from '@app/views/Page.dto';
 
 class UserService {
   async getUserById(user: User, userId: string) {
