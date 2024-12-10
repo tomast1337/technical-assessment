@@ -1,3 +1,5 @@
+import { Types } from 'mongoose';
+
 import { RegionModel } from '@models/index';
 import { RegionDto } from '@views/Region.dto';
 
@@ -5,7 +7,7 @@ class RegionService {
   async createRegion(userId: string, createRegionDto: RegionDto) {
     const createdRegion = await RegionModel.create({
       ...createRegionDto,
-      user: userId,
+      user: new Types.ObjectId(userId),
     });
 
     return createdRegion;
