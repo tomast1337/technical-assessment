@@ -1,16 +1,40 @@
-version: "3.8"
+version: '3.8'
 
 services:
   mongo:
     image: mongo:latest
     container_name: oz-tech-test-mongo
     ports:
-      - "27021:27017"
+      - '27021:27017'
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
     volumes:
       - mongo-data:/data/db
 
+  app:
+    container_name: oz-tech-test-app
+    working_dir: /usr/src/app
+    restart: always
+    environment:
+      MONGO_URI: mongodb://root:example@mongo:27017/oz-tech-test?authSource=admin
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+      - '9229:9229'
+    command: npm run dev
+    env_file:
+      - .env
+    depends_on:
+      - mongo
+    networks:
+      - app-network
+
 volumes:
   mongo-data:
+
+networks:
+  app-network:
+    driver: bridge
