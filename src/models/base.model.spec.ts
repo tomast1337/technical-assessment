@@ -23,12 +23,12 @@ describe('Base Model', () => {
     session = await mongoose.startSession();
   });
 
-  after(() => {
-    session.endSession();
+  after(async () => {
+    await session.endSession();
   });
 
-  beforeEach(() => {
-    session.startTransaction();
+  beforeEach(async () => {
+    await session.startTransaction();
   });
 
   afterEach(async () => {
