@@ -1,14 +1,14 @@
-import { expect } from 'chai';
 import { faker } from '@faker-js/faker';
+import { expect } from 'chai';
 import * as mongoose from 'mongoose';
 import * as sinon from 'sinon';
 
-import '../database';
 import { UserModel } from '@models/index';
-import { User } from '@models/user.model';
 import { PagingDto } from '@views/Paging.dto';
-import { getUserById, updateUser, deleteUser, getUsers } from './user.service';
+import '../database';
 import GeoLib from '../lib';
+import { deleteUser, getUserById, getUsers, updateUser } from './user.service';
+
 describe('User Service', () => {
   let session;
   let sandbox: sinon.SinonSandbox;
