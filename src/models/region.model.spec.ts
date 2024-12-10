@@ -54,11 +54,13 @@ describe('Region model', () => {
   it('should create a new region with a default _id', async () => {
     const name = faker.location.city();
 
-    const coordinates: [number, number][] = [
-      [10, 20],
-      [30, 40],
-      [50, 60],
-      [10, 20],
+    const coordinates: [number, number][][] = [
+      [
+        [10, 20],
+        [30, 40],
+        [50, 60],
+        [10, 20],
+      ],
     ];
 
     const user = {
@@ -74,7 +76,10 @@ describe('Region model', () => {
     const region = {
       _id: new mongoose.Types.ObjectId(),
       name,
-      coordinates,
+      geometry: {
+        type: 'Polygon',
+        coordinates,
+      },
       user: user._id,
     };
 
@@ -84,6 +89,44 @@ describe('Region model', () => {
     expect(foundRegion).to.exist;
     expect(foundRegion?._id.toString()).to.be.a('string');
     expect(foundRegion).to.have.property('name', name);
+  });
+
+  it('should close the polygon if it is not closed', async () => {
+    const name = faker.location.city();
+
+    const coordinates: [number, number][] = [
+      [10, 20],
+      [30, 40],
+      [50, 60],
+      // The polygon is not closed
+    ];
+
+    const user = {
+      _id: new mongoose.Types.ObjectId(),
+      name: faker.person.firstName(),
+      email: faker.internet.email(),
+      password: faker.internet.password(),
+      address: faker.location.streetAddress(),
+    };
+
+    await UserModel.create([user], { session });
+
+    const region = {
+      _id: new mongoose.Types.ObjectId(),
+      name,
+      geometry: {
+        type: 'Polygon',
+        coordinates: [coordinates],
+      },
+      user: user._id,
+    };
+
+    await RegionModel.create([region], { session });
+
+    const foundRegion = await RegionModel.findOne({ name }).session(session);
+    expect(foundRegion).to.exist;
+    expect(foundRegion?.geometry.coordinates[0]).to.have.lengthOf(4);
+    expect(foundRegion?.geometry.coordinates[0][3]).to.deep.equal([10, 20]);
   });
 
   it('should use the provided _id if specified', async () => {
@@ -107,7 +150,10 @@ describe('Region model', () => {
     const regionInstance = {
       _id: new mongoose.Types.ObjectId(), // Cast to ObjectId
       name: faker.location.city(),
-      coordinates,
+      geometry: {
+        type: 'Polygon',
+        coordinates: [coordinates],
+      },
       user: user._id,
     };
 
@@ -145,7 +191,10 @@ describe('Region model', () => {
     const region = {
       _id: new mongoose.Types.ObjectId().toString(),
       name,
-      coordinates,
+      geometry: {
+        type: 'Polygon',
+        coordinates: [coordinates],
+      },
       user: user._id,
     };
 
