@@ -1,5 +1,61 @@
 # OZmap Challenge: Construindo a Geolocalização do Futuro
 
+# Como rodar o projeto
+
+defina as variáveis de ambiente no arquivo .env ou no ambiente de execução
+
+```bash
+MONGO_URI=mongodb://root:example@127.0.0.1:27021/oz-tech-test?authSource=admin # Substitua pelo seu caso necessário
+JWT_SECRET=A_JWT_SECRET
+JWT_EXPIRES_IN=1d
+JWT_REFRESH_SECRET=A_JWT_REFRESH_SECRET
+JWT_REFRESH_EXPIRES_IN=7d
+PORT=3000
+NODE_ENV=development
+GOOGLE_MAPS_API_KEY=YOUR_GOOGLE_MAPS_API_KEY
+```
+
+Execute o comando para instalar as dependências
+
+```bash
+pnpm install
+# ou
+yarn install
+# ou
+npm install
+```
+
+Execute o comando para rodar o docker-compose com o mongodb
+
+```bash
+docker-compose up -d
+```
+
+Execute o comando para rodar o projeto
+
+```bash
+pnpm dev
+# ou
+yarn dev
+# ou
+npm run dev
+```
+
+para rodar os testes execute o comando
+
+```bash
+pnpm test
+# ou
+pnpm test:e2e
+# para rodar os testes de integração
+```
+
+# Documentação da API
+
+A documentação da API com o swagger pode ser acessada em [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
+
+# Infamações passados para o desafio
+
 Olá desenvolvedor(a)! Bem-vindo(a) ao Desafio Técnico do OZmap. Este é um projeto que simula um cenário real de nossa empresa, onde você irá desempenhar um papel crucial ao desenvolver uma API RESTful robusta para gerenciar usuários e localizações. Estamos muito animados para ver sua abordagem e solução!
 
 ## 🌍 **Visão Geral**
@@ -18,6 +74,7 @@ Em um mundo conectado e globalizado, a geolocalização se torna cada vez mais e
 ## 🔍 **Funcionalidades Esperadas**
 
 ### Usuários
+
 - **CRUD** completo para usuários.
 - Cada usuário deve ter nome, email, endereço e coordenadas.
 - Na criação, o usuário pode fornecer endereço ou coordenadas. Haverá erro caso forneça ambos ou nenhum.
@@ -25,6 +82,7 @@ Em um mundo conectado e globalizado, a geolocalização se torna cada vez mais e
 - Atualização de endereço ou coordenadas deve seguir a mesma lógica.
 
 ### Regiões
+
 - **CRUD** completo para regiões.
 - Uma região é definida como um polígono em GeoJSON, um formato padrão para representar formas geográficas. Cada região tem um nome, um conjunto de coordenadas que formam o polígono, e um usuário que será o dono da região.
 - Listar regiões contendo um ponto específico.
@@ -45,6 +103,7 @@ Em um mundo conectado e globalizado, a geolocalização se torna cada vez mais e
   ```
 
 ### Testes
+
 - Unitários e de integração.
 
 ## 🌟 **Diferenciais**
