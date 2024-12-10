@@ -1,5 +1,14 @@
 import 'reflect-metadata';
-import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
+import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  IsArray,
+  IsEmail,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  MinLength,
+} from 'class-validator';
 
 export class RegisterUserDto {
   @IsNotEmpty()
@@ -12,5 +21,13 @@ export class RegisterUserDto {
   password: string;
 
   @IsNotEmpty()
-  address: string;
+  @IsOptional()
+  address?: string;
+
+  @IsArray()
+  @IsOptional()
+  @IsNumber({}, { each: true })
+  @ArrayMaxSize(2)
+  @ArrayMinSize(2)
+  coordinates?: [number, number];
 }
