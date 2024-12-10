@@ -1,7 +1,8 @@
 import 'reflect-metadata';
 import { Prop, Ref, pre } from '@typegoose/typegoose';
 
-import lib from '../lib';
+import lib from '@app/lib';
+
 import { Base } from './base.model';
 import { Region } from './region.model';
 
