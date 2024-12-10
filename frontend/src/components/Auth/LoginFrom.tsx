@@ -1,4 +1,3 @@
-import React from "react";
 import { Form, Input, Button, notification } from "antd";
 import { LoginUser } from "@app/services/Auth/types";
 import { FormattedMessage, useIntl } from "react-intl";
