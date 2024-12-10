@@ -15,72 +15,76 @@ import passport from './auth/passaport';
 import logger from './logger';
 import { swaggerConfig } from './swaggerConfig';
 
-const loggerLocal = logger.child({ label: 'app' });
-loggerLocal.info('Starting server...');
+const boostrap = async () => {
+  const loggerLocal = logger.child({ label: 'app' });
+  loggerLocal.info('Starting server...');
 
-const app = express();
-const router = Router();
-const port = env.PORT;
+  const app = express();
+  const router = Router();
+  const port = env.PORT;
 
-const specs = swaggerJsdoc(swaggerConfig);
+  const specs = swaggerJsdoc(swaggerConfig);
 
-app.use(
-  morgan('combined', {
-    stream: {
-      write: (message) =>
-        logger
-          .child({
-            label: 'http',
-          })
-          .info(message.trim()),
-    },
-  }),
-);
-
-app.use(cookieParser());
-
-app.use(
-  json({
-    limit: '50mb',
-  }),
-);
-
-app.use(passport.initialize());
-app.use('/api', router);
-
-router.use('/auth', authRouter);
-
-router.use('/user', userRouter);
-
-router.use('/region', regionRouter);
-
-router.use('/region-actions', regionActionsRouter);
-
-app.use(
-  '/api-docs',
-  swaggerUi.serve,
-  swaggerUi.setup(specs, {
-    explorer: true,
-    swaggerOptions: {
-      persistAuthorization: true,
-    },
-  }),
-);
-
-router.use('/', (req, res) => {
-  res.send('Welcome to the API');
-});
-
-app.use((req, res, _next) => {
-  res.status(StatusCodes.NOT_FOUND).json({ message: 'Not Found' });
-});
-
-app.listen(port, () => {
-  loggerLocal.info(`Server is running on http://localhost:${port}`);
-
-  loggerLocal.debug(
-    `API documentation is running on http://localhost:${port}/api-docs`,
+  app.use(
+    morgan('combined', {
+      stream: {
+        write: (message) =>
+          logger
+            .child({
+              label: 'http',
+            })
+            .info(message.trim()),
+      },
+    }),
   );
-});
 
-export default app;
+  app.use(cookieParser());
+
+  app.use(
+    json({
+      limit: '50mb',
+    }),
+  );
+
+  app.use(passport.initialize());
+  app.use('/api', router);
+
+  router.use('/auth', authRouter);
+
+  router.use('/user', userRouter);
+
+  router.use('/region', regionRouter);
+
+  router.use('/region-actions', regionActionsRouter);
+
+  app.use(
+    '/api-docs',
+    swaggerUi.serve,
+    swaggerUi.setup(specs, {
+      explorer: true,
+      swaggerOptions: {
+        persistAuthorization: true,
+      },
+    }),
+  );
+
+  router.use('/', (req, res) => {
+    res.send('Welcome to the API');
+  });
+
+  app.use((req, res, _next) => {
+    res.status(StatusCodes.NOT_FOUND).json({ message: 'Not Found' });
+  });
+
+  app.listen(port, () => {
+    loggerLocal.info(`Server is running on http://localhost:${port}`);
+
+    loggerLocal.debug(
+      `API documentation is running on http://localhost:${port}/api-docs`,
+    );
+  });
+
+  return app;
+};
+
+export default boostrap();
