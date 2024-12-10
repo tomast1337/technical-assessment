@@ -79,7 +79,7 @@ describe('AuthService', () => {
         });
       } catch (error) {
         expect((error as any).message).to.equal(
-          'Either address or coordinates should be provided',
+          'Either address or coordinates should be provided, not both',
         );
       }
 
@@ -98,7 +98,9 @@ describe('AuthService', () => {
           coordinates: [25.774, -80.19],
         });
       } catch (error) {
-        expect((error as any).message).to.equal('Address is required');
+        expect((error as any).message).to.equal(
+          'Invalid address or coordinates',
+        );
       }
 
       expect(findOneStub.calledOnce).to.be.true;
@@ -115,7 +117,9 @@ describe('AuthService', () => {
           password: 'password123',
         });
       } catch (error) {
-        expect((error as any).message).to.equal('Address is required');
+        expect((error as any).message).to.equal(
+          'Invalid address or coordinates',
+        );
       }
 
       expect(findOneStub.calledOnce).to.be.true;
