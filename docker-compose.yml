@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mongo1:
     container_name: oz-tech-map-prod-mongo1
@@ -58,14 +56,19 @@ services:
       - '9229:9229'
     command: npm run dev
     depends_on:
-      - mongo
+      - mongo1
+      - mongo2
+      - mongo3
     networks:
       - app-network
 
 volumes:
-  mongo1-data:
-  mongo2-data:
-  mongo3-data:
+  mongo1_data:
+  mongo2_data:
+  mongo3_data:
+  mongo1_config:
+  mongo2_config:
+  mongo3_config:
 
 networks:
   app-network:
