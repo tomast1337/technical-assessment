@@ -1,22 +1,29 @@
-import 'reflect-metadata';
-import { faker } from '@faker-js/faker';
-import { expect } from 'chai';
-import { restore, stub } from 'sinon';
 import '@app/database';
 import '@app/server';
+import { faker } from '@faker-js/faker';
+import { expect } from 'chai';
+import 'reflect-metadata';
+import mongoose from 'mongoose';
+import { restore, stub } from 'sinon';
 
 import GeoLib from '../lib';
 
 import { UserModel } from '.';
 
 describe('User model', () => {
-  let createUserStub: sinon.SinonStub;
-  let findOneUserStub: sinon.SinonStub;
-  let deleteOneUserStub: sinon.SinonStub;
-  let updateUserStub: sinon.SinonStub;
+  let session: mongoose.ClientSession;
+
   const geoLibStub: Partial<typeof GeoLib> = {};
 
-  before(() => {
+  before(async () => {
+    session = await mongoose.startSession();
+  });
+
+  after(() => {
+    session.endSession();
+  });
+
+  beforeEach(() => {
     geoLibStub.getAddressFromCoordinates = stub(
       GeoLib,
       'getAddressFromCoordinates',
@@ -30,21 +37,17 @@ describe('User model', () => {
       lng: faker.location.longitude(),
     });
 
-    createUserStub = stub(UserModel, 'create');
-    findOneUserStub = stub(UserModel, 'findOne');
-    deleteOneUserStub = stub(UserModel, 'deleteOne');
-    updateUserStub = stub(UserModel, 'findOneAndUpdate');
+    session.startTransaction();
   });
 
-  after(() => {
-    restore();
-  });
-
-  beforeEach(() => {
-    createUserStub.reset();
-    findOneUserStub.reset();
-    deleteOneUserStub.reset();
-    updateUserStub.reset();
+  afterEach(async () => {
+    try {
+      await session.abortTransaction();
+    } finally {
+      session.endSession();
+      session = await mongoose.startSession();
+      restore();
+    }
   });
 
   it('should create a new document', async () => {
@@ -54,13 +57,16 @@ describe('User model', () => {
     const address = faker.location.streetAddress({ useFullAddress: true });
 
     const user = { name, email, password, address };
-    createUserStub.resolves(user);
 
-    const result = await UserModel.create({ name, email, password, address });
+    const result = (
+      await UserModel.create([user], {
+        session,
+      })
+    )[0];
+
     expect(result.name).to.equal(name);
     expect(result.email).to.equal(email);
     expect(result.password).to.equal(password);
-    expect(createUserStub.calledOnce).to.be.true;
   });
 
   it('should find a document', async () => {
@@ -70,10 +76,9 @@ describe('User model', () => {
     const address = faker.location.streetAddress({ useFullAddress: true });
 
     const user = { name, email, password, address };
-    findOneUserStub.resolves(user);
 
-    await UserModel.create({ name, email, password, address });
-    const result = await UserModel.findOne({ name });
+    await UserModel.create([user], { session });
+    const result = await UserModel.findOne({ name }).session(session);
 
     if (!result) {
       throw new Error('User not found');
@@ -82,7 +87,6 @@ describe('User model', () => {
     expect(result.name).to.equal(name);
     expect(result.email).to.equal(email);
     expect(result.password).to.equal(password);
-    expect(findOneUserStub.calledOnce).to.be.true;
   });
 
   it('should update a document', async () => {
@@ -92,28 +96,19 @@ describe('User model', () => {
     const address = faker.location.streetAddress({ useFullAddress: true });
 
     const user = { name, email, password, address };
-    createUserStub.resolves(user);
 
-    const createdUser = await UserModel.create({
-      name,
-      email,
-      password,
-      address,
-    });
+    const createdUser = (await UserModel.create([user], { session }))[0];
 
     const updatedName = faker.person.firstName();
-    const updatedUser = { ...createdUser, name: updatedName };
-    updateUserStub.resolves(updatedUser);
 
     const result = await UserModel.findOneAndUpdate(
       { _id: createdUser._id },
       { name: updatedName },
-      { new: true },
+      { new: true, session },
     );
 
     expect(result).to.exist;
     expect(result?.name).to.equal(updatedName);
-    expect(updateUserStub.calledOnce).to.be.true;
   });
 
   it('should delete a document', async () => {
@@ -123,17 +118,9 @@ describe('User model', () => {
     const address = faker.location.streetAddress({ useFullAddress: true });
 
     const user = { name, email, password, address };
-    createUserStub.resolves(user);
 
-    const createdUser = await UserModel.create({
-      name,
-      email,
-      password,
-      address,
-    });
+    const createdUser = (await UserModel.create([user], { session }))[0];
 
-    deleteOneUserStub.resolves({ deletedCount: 1 });
-
-    await UserModel.deleteOne({ _id: createdUser._id });
+    await UserModel.deleteOne({ _id: createdUser._id }, { session });
   });
 });
