@@ -4,5 +4,9 @@
         "tsconfig-paths/register"
     ],
     "spec": "src/**/*.spec.ts",
-    "exit": true
+    "exit": true,
+    "watch": true,
+    "watch-files": [
+        "src/**/*.ts"
+    ]
 }
