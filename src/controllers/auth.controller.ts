@@ -54,10 +54,17 @@ authRouter.post(
   '/register',
   validationBodyMiddleware(RegisterUserDto),
   async (req: Request, res: Response) => {
-    const { name, email, password, address } = req.body;
+    const { name, email, password, address, coordinates } = req.body;
 
     try {
-      const result = await registerUser({ name, email, password, address });
+      const result = await registerUser({
+        name,
+        email,
+        password,
+        address,
+        coordinates,
+      });
+
       res.status(StatusCodes.OK).json(result);
     } catch (error) {
       res
