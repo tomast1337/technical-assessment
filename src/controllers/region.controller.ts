@@ -9,6 +9,7 @@ import {
 } from '@middlewares/validationMiddleware';
 import RegionService from '@services/region.service';
 import { RegionDto } from '@views/Region.dto';
+import logger from '@app/logger';
 
 const { createRegion, getRegionById, updateRegion, deleteRegion, getRegions } =
   RegionService;
@@ -162,9 +163,11 @@ regionRouter.put(
       const region = await updateRegion(user._id, id, body);
       res.status(StatusCodes.OK).json(region);
     } catch (error) {
+      logger.info(error);
+
       res
         .status(StatusCodes.NOT_FOUND)
-        .json({ message: (error as Error).message });
+        .json({ message: (error as Error).message || 'Unknown error' });
     }
   },
 );
@@ -217,7 +220,7 @@ regionRouter.delete(
  * @swagger
  * /api/region:
  *   get:
- *     summary: Get all regions for the current user
+ *     summary: Get a paginated list of regions
  *     tags: [Region]
  *     security:
  *       - bearerAuth: []
