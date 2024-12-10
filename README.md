@@ -1,6 +1,6 @@
 # OZmap Challenge: Construindo a Geolocalização do Futuro
 
-# Como rodar o projeto
+## Como rodar o projeto
 
 defina as variáveis de ambiente no arquivo .env ou no ambiente de execução
 
@@ -50,6 +50,12 @@ pnpm test:e2e
 # para rodar os testes de integração
 ```
 
+Para verificar a cobertura de testes execute o comando
+
+```bash
+pnpm test:cov
+```
+
 Existe um arquivo `docker-compose.dev.yml` que pode ser utilizado para rodar apenas o mongodb em ambiente de desenvolvimento e testes e2e do servidor
 
 ```bash
@@ -58,11 +64,11 @@ docker-compose -f docker-compose.dev.yml up -d
 
 Obs: fora do docker compose o mongodb deve ser acessado na porta 27017 no localhost `mongodb://root:example@127.0.0.1:27021/oz-tech-test?authSource=admin`
 
-# Documentação da API
+## Documentação da API
 
 A documentação da API com o swagger pode ser acessada em [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
 
-# Infamações passados para o desafio
+## Infamações passados para o desafio
 
 Olá desenvolvedor(a)! Bem-vindo(a) ao Desafio Técnico do OZmap. Este é um projeto que simula um cenário real de nossa empresa, onde você irá desempenhar um papel crucial ao desenvolver uma API RESTful robusta para gerenciar usuários e localizações. Estamos muito animados para ver sua abordagem e solução!
 
