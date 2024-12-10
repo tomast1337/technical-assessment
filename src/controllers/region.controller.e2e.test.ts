@@ -2,30 +2,25 @@ import { faker } from '@faker-js/faker';
 import axios, { AxiosInstance } from 'axios';
 import * as bcrypt from 'bcryptjs';
 import { expect } from 'chai';
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
+import { SinonSandbox, createSandbox, restore, stub } from 'sinon';
 
-import { RegionModel, UserModel } from '@models/index';
+import { UserModel } from '@models/index';
+import RegionService from '@services/region.service';
 
-import '../database';
 import GeoLib from '../lib';
 
-import { SinonSandbox, createSandbox, restore, stub } from 'sinon';
-import '../server';
+import '@app/database';
+import '@app/server';
 
-describe('User E2E', () => {
+describe('Region E2E', () => {
   let axiosInstance: AxiosInstance;
-  let session: mongoose.ClientSession;
   let _sandbox: SinonSandbox;
-  let name: string;
-  let email: string;
-  let password: string;
-  let address: string;
+  let token: string;
+  const userId = new mongoose.Types.ObjectId().toString();
   const geoLibStub: Partial<typeof GeoLib> = {};
 
   before(async () => {
-    _sandbox = createSandbox();
-    session = await mongoose.startSession();
-
     // Mock GeoLib methods
     geoLibStub.getAddressFromCoordinates = stub(
       GeoLib,
@@ -39,104 +34,265 @@ describe('User E2E', () => {
       lat: faker.location.latitude(),
       lng: faker.location.longitude(),
     });
-  });
-
-  after(async () => {
-    restore();
-    await session.endSession();
-    await mongoose.disconnect();
-  });
-
-  beforeEach(async () => {
-    name = faker.person.firstName();
-    email = faker.internet.email();
-    password = faker.internet.password();
-    address = faker.location.streetAddress({ useFullAddress: true });
-
-    await UserModel.create({
-      name,
-      email,
-      password: bcrypt.hashSync(password, 10),
-      address,
-    });
-
-    const loggedUser = await axiosInstance.post('/auth/login', {
-      email,
-      password,
-    });
 
     axiosInstance = axios.create({
       baseURL: 'http://localhost:3000/api',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${loggedUser.data.token}`,
       },
     });
 
-    await session.startTransaction();
-  });
+    _sandbox = createSandbox();
 
-  afterEach(async () => {
-    await UserModel.deleteMany({});
-    await RegionModel.deleteMany({});
-    await session.abortTransaction();
-  });
+    // Create a test user and get a JWT token
+    const password = bcrypt.hashSync('password123', 10);
 
-  describe('GET /api/user/me', () => {
-    it('should get the current user information', async () => {
-      const result = await axiosInstance.get('/user/me', {});
-
-      expect(result.data).to.have.property('name', name);
-      expect(result.data).to.have.property('email', email);
-      expect(result.data).to.have.property('address', address);
+    await UserModel.create({
+      _id: userId,
+      name: 'Test User',
+      email: 'test@example.com',
+      address: '123 Main St',
+      coordinates: [25.774, -80.19],
+      password,
     });
+
+    const res = await axiosInstance.post('/auth/login', {
+      email: 'test@example.com',
+      password: 'password123',
+    });
+
+    token = res.data.token;
   });
 
-  describe('PUT /api/user/me', () => {
-    it('should update the current user information', async () => {
-      const newName = faker.person.firstName();
-      const newAddress = faker.location.streetAddress({ useFullAddress: true });
+  after(async () => {
+    restore();
+    await UserModel.deleteMany({});
+    await mongoose.disconnect();
+  });
 
-      const result = await axiosInstance.put('/user/me', {
-        name: newName,
-        address: newAddress,
+  beforeEach(() => {
+    _sandbox = createSandbox();
+  });
+
+  afterEach(() => {
+    _sandbox.restore();
+  });
+
+  describe('POST /api/region', () => {
+    it('should create a new region', async () => {
+      const regionData = {
+        name: 'Test Region',
+        coordinates: [
+          [25.774, -80.19],
+          [18.466, -66.118],
+          [32.321, -64.757],
+          [25.774, -80.19],
+        ],
+      };
+
+      const res = await axiosInstance.post('/region', regionData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
-      expect(result.data).to.have.property('name', newName);
-      expect(result.data).to.have.property('address', newAddress);
+      expect(res.status).to.equal(201);
+      expect(res.data).to.have.property('name', 'Test Region');
     });
-  });
 
-  describe('DELETE /api/user/me', () => {
-    it('should delete the current user account', async () => {
-      const result = await axiosInstance.delete('/user/me', {});
+    it('should return 400 if validation fails', async () => {
+      const regionData = {
+        name: 'Test Region',
+        coordinates: [
+          [25.774, -80.19],
+          [18.466, -66.118],
+        ],
+      };
 
-      expect(result.data).to.have.property(
-        'message',
-        'User deleted successfully',
-      );
-
-      const foundUser = await UserModel.findOne({ email });
-      expect(foundUser).to.be.null;
-    });
-  });
-
-  describe('GET /api/user', () => {
-    it('should get a list of users with pagination', async () => {
       try {
-        const result = await axiosInstance.get('/user', {
-          params: {
-            page: 1,
-            limit: 1,
-            order: true,
-            shortBy: 'name',
+        await axiosInstance.post('/region', regionData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
         });
-
-        expect(result.data).to.have.lengthOf(1);
       } catch (error) {
-        console.log((error as any).response.data);
+        expect((error as any).response.status).to.equal(400);
       }
+    });
+  });
+
+  describe('GET /api/region/:id', () => {
+    it('should get a region by ID', async () => {
+      const region = await RegionService.createRegion(userId, {
+        name: 'Test Region',
+        coordinates: [
+          [25.774, -80.19],
+          [18.466, -66.118],
+          [32.321, -64.757],
+          [25.774, -80.19],
+        ],
+      });
+
+      const res = await axiosInstance.get(`/region/${region._id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      expect(res.status).to.equal(200);
+      expect(res.data).to.have.property('name', 'Test Region');
+    });
+
+    it('should return 404 if region is not found', async () => {
+      try {
+        await axiosInstance.get(`/region/${new mongoose.Types.ObjectId()}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      } catch (error) {
+        expect((error as any).response.status).to.equal(404);
+      }
+    });
+  });
+
+  describe('PUT /api/region/:id', () => {
+    it('should update a region by ID', async () => {
+      const region = await RegionService.createRegion(userId, {
+        name: 'Test Region',
+        coordinates: [
+          [25.774, -80.19],
+          [18.466, -66.118],
+          [32.321, -64.757],
+          [25.774, -80.19],
+        ],
+      });
+
+      const updatedData = {
+        name: 'Updated Region',
+        coordinates: [
+          [25.774, -80.19],
+          [18.466, -66.118],
+          [32.321, -64.757],
+          [25.774, -80.19],
+        ],
+      };
+
+      const res = await axiosInstance.put(
+        `/region/${region._id}`,
+        updatedData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      expect(res.status).to.equal(200);
+      expect(res.data).to.have.property('name', 'Updated Region');
+    });
+
+    it('should return 404 if region is not found', async () => {
+      const updatedData = {
+        name: 'Updated Region',
+        coordinates: [
+          [25.774, -80.19],
+          [18.466, -66.118],
+          [32.321, -64.757],
+          [25.774, -80.19],
+        ],
+      };
+
+      try {
+        await axiosInstance.put(
+          `/region/${new mongoose.Types.ObjectId()}`,
+          updatedData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+      } catch (error) {
+        expect((error as any).response.status).to.equal(404);
+      }
+    });
+  });
+
+  describe('DELETE /api/region/:id', () => {
+    it('should delete a region by ID', async () => {
+      const region = await RegionService.createRegion(userId, {
+        name: 'Test Region',
+        coordinates: [
+          [25.774, -80.19],
+          [18.466, -66.118],
+          [32.321, -64.757],
+          [25.774, -80.19],
+        ],
+      });
+
+      const res = await axiosInstance.delete(`/region/${region._id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      expect(res.status).to.equal(200);
+
+      expect(res.data).to.have.property(
+        'message',
+        'Region deleted successfully',
+      );
+    });
+
+    it('should return 404 if region is not found', async () => {
+      try {
+        await axiosInstance.delete(`/region/${new mongoose.Types.ObjectId()}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      } catch (error) {
+        expect((error as any).response.status).to.equal(404);
+      }
+    });
+  });
+
+  describe('GET /api/region', () => {
+    it('should get all regions for the current user', async () => {
+      await RegionService.createRegion(userId, {
+        name: 'Test Region 1',
+        coordinates: [
+          [25.774, -80.19],
+          [18.466, -66.118],
+          [32.321, -64.757],
+          [25.774, -80.19],
+        ],
+      });
+
+      await RegionService.createRegion(userId, {
+        name: 'Test Region 2',
+        coordinates: [
+          [25.774, -80.19],
+          [18.466, -66.118],
+          [32.321, -64.757],
+          [25.774, -80.19],
+        ],
+      });
+
+      const res = await axiosInstance.get('/region', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {
+          page: 1,
+          limit: 2,
+        },
+      });
+
+      expect(res.status).to.equal(200);
+      expect(res.data).to.be.an('array');
+      expect(res.data).to.have.lengthOf(2);
     });
   });
 });
