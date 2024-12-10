@@ -1,10 +1,11 @@
 import { faker } from '@faker-js/faker';
 import { UserModel } from '@models/index';
+import axios from 'axios';
+import * as bcrypt from 'bcryptjs';
 import { expect } from 'chai';
 import * as mongoose from 'mongoose';
 import * as sinon from 'sinon';
-import * as bcrypt from 'bcryptjs';
-import axios from 'axios';
+
 import '../database';
 import GeoLib from '../lib';
 import '../server';
@@ -23,8 +24,10 @@ describe('User E2E', () => {
         'Content-Type': 'application/json',
       },
     });
+
     sandbox = sinon.createSandbox();
     session = await mongoose.startSession();
+
     // Mock GeoLib methods
     geoLibStub.getAddressFromCoordinates = sinon
       .stub(GeoLib, 'getAddressFromCoordinates')
@@ -60,7 +63,12 @@ describe('User E2E', () => {
       const password = faker.internet.password();
       const address = faker.location.streetAddress({ useFullAddress: true });
 
-      await UserModel.create({ name, email, password: bcrypt.hashSync(password, 10), address });
+      await UserModel.create({
+        name,
+        email,
+        password: bcrypt.hashSync(password, 10),
+        address,
+      });
 
       const loggedUser = await axiosInstance.post('/auth/login', {
         email,
@@ -86,7 +94,12 @@ describe('User E2E', () => {
       const password = faker.internet.password();
       const address = faker.location.streetAddress({ useFullAddress: true });
 
-      await UserModel.create({ name, email, password: bcrypt.hashSync(password, 10), address });
+      await UserModel.create({
+        name,
+        email,
+        password: bcrypt.hashSync(password, 10),
+        address,
+      });
 
       const loggedUser = await axiosInstance.post('/auth/login', {
         email,
@@ -96,14 +109,18 @@ describe('User E2E', () => {
       const newName = faker.person.firstName();
       const newAddress = faker.location.streetAddress({ useFullAddress: true });
 
-      const result = await axiosInstance.put('/user/me', {
-        name: newName,
-        address: newAddress,
-      }, {
-        headers: {
-          Authorization: `Bearer ${loggedUser.data.token}`,
+      const result = await axiosInstance.put(
+        '/user/me',
+        {
+          name: newName,
+          address: newAddress,
         },
-      });
+        {
+          headers: {
+            Authorization: `Bearer ${loggedUser.data.token}`,
+          },
+        },
+      );
 
       expect(result.data).to.have.property('name', newName);
       expect(result.data).to.have.property('address', newAddress);
@@ -117,7 +134,12 @@ describe('User E2E', () => {
       const password = faker.internet.password();
       const address = faker.location.streetAddress({ useFullAddress: true });
 
-      await UserModel.create({ name, email, password: bcrypt.hashSync(password, 10), address });
+      await UserModel.create({
+        name,
+        email,
+        password: bcrypt.hashSync(password, 10),
+        address,
+      });
 
       const loggedUser = await axiosInstance.post('/auth/login', {
         email,
@@ -130,7 +152,10 @@ describe('User E2E', () => {
         },
       });
 
-      expect(result.data).to.have.property('message', 'User deleted successfully');
+      expect(result.data).to.have.property(
+        'message',
+        'User deleted successfully',
+      );
 
       const foundUser = await UserModel.findOne({ email });
       expect(foundUser).to.be.null;
@@ -139,10 +164,9 @@ describe('User E2E', () => {
 
   describe('GET /api/user', () => {
     it('should get a list of users with pagination', async () => {
-    
-        const password = faker.internet.password();
-    
-        const users = await UserModel.insertMany([
+      const password = faker.internet.password();
+
+      const users = await UserModel.insertMany([
         {
           name: faker.person.firstName(),
           email: faker.internet.email(),
@@ -162,23 +186,23 @@ describe('User E2E', () => {
         password: password,
       });
 
-     try{
-         const result = await axiosInstance.get('/user', {
-        headers: {
-          Authorization: `Bearer ${loggedUser.data.token}`,
-        },
-        params: {
-          page: 1,
-          limit: 1,
-          order: true,
-          shortBy: 'name',
-        },
-      });
-      expect(result.data).to.have.lengthOf(1);
-     } catch (error) {
+      try {
+        const result = await axiosInstance.get('/user', {
+          headers: {
+            Authorization: `Bearer ${loggedUser.data.token}`,
+          },
+          params: {
+            page: 1,
+            limit: 1,
+            order: true,
+            shortBy: 'name',
+          },
+        });
+
+        expect(result.data).to.have.lengthOf(1);
+      } catch (error) {
         console.log(error.response.data);
       }
-
     });
   });
 });

@@ -1,4 +1,5 @@
 import { createLogger, format, transports } from 'winston';
+
 import { env } from './config';
 
 const getLevel = (env: string) => {

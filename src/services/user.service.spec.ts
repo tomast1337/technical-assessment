@@ -1,24 +1,26 @@
 import { faker } from '@faker-js/faker';
+import { UserModel } from '@models/index';
+import { PagingDto } from '@views/Paging.dto';
 import { expect } from 'chai';
 import * as mongoose from 'mongoose';
 import * as sinon from 'sinon';
 
-import { UserModel } from '@models/index';
-import { PagingDto } from '@views/Paging.dto';
 import '../database';
 import GeoLib from '../lib';
 import UserService from './user.service';
+
 const { deleteUser, getUserById, getUsers, updateUser } = UserService;
+
 describe('User Service', () => {
   let session;
   let sandbox: sinon.SinonSandbox;
-   const geoLibStub: Partial<typeof GeoLib> = {};
+  const geoLibStub: Partial<typeof GeoLib> = {};
 
   before(async () => {
     sandbox = sinon.createSandbox();
     session = await mongoose.startSession();
 
-        // Mock GeoLib methods
+    // Mock GeoLib methods
     geoLibStub.getAddressFromCoordinates = sinon
       .stub(GeoLib, 'getAddressFromCoordinates')
       .resolves(faker.location.streetAddress({ useFullAddress: true }));
@@ -81,14 +83,22 @@ describe('User Service', () => {
       });
 
       const updateData = { name: faker.person.firstName() };
-      const updatedUser = await updateUser(user, user._id.toString(), updateData);
+
+      const updatedUser = await updateUser(
+        user,
+        user._id.toString(),
+        updateData,
+      );
+
       expect(updatedUser).to.exist;
       expect(updatedUser.name).to.equal(updateData.name);
     });
 
     it('should throw an error if the user is not found', async () => {
       try {
-        await updateUser(null, faker.string.alphanumeric(10), { name: faker.person.firstName() });
+        await updateUser(null, faker.string.alphanumeric(10), {
+          name: faker.person.firstName(),
+        });
       } catch (error) {
         expect(error).to.have.property('message', 'User not found');
       }
@@ -138,7 +148,13 @@ describe('User Service', () => {
         },
       ]);
 
-      const query: PagingDto = { page: 1, limit: 1, order: true, shortBy: 'name' };
+      const query: PagingDto = {
+        page: 1,
+        limit: 1,
+        order: true,
+        shortBy: 'name',
+      };
+
       const result = await getUsers(query);
       expect(result).to.have.lengthOf(1);
       expect(result[0]._id.toString()).to.equal(users[0]._id.toString());

@@ -26,6 +26,7 @@ export function validationBodyMiddleware<T>(
     const dto = plainToInstance(type, req.body);
 
     const errors = await validate(dto);
+
     if (errors.length > 0) {
       const messages = errors.map((error: ValidationError) =>
         Object.values(error.constraints || {}).join(', '),
@@ -76,6 +77,7 @@ export function validationQueryMiddleware<T>(
     });
 
     const errors = await validate(dto as object);
+
     if (errors.length > 0) {
       const messages = errors.map((error: ValidationError) =>
         Object.values(error.constraints || {}).join(', '),

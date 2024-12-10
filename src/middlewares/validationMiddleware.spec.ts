@@ -1,10 +1,13 @@
 import { expect } from 'chai';
-import * as sinon from 'sinon';
-import { Request, Response, NextFunction } from 'express';
-import { validationBodyMiddleware, validationQueryMiddleware } from './validationMiddleware';
-import { IsInt, IsOptional, IsString, Min, IsBoolean } from 'class-validator';
-import { plainToInstance } from 'class-transformer';
+import { IsBoolean, IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import * as sinon from 'sinon';
+
+import {
+  validationBodyMiddleware,
+  validationQueryMiddleware,
+} from './validationMiddleware';
 
 class TestDto {
   @IsInt()
@@ -33,6 +36,7 @@ describe('Validation Middleware', () => {
 
   beforeEach(() => {
     req = {};
+
     res = {
       status: function () {
         return this;
@@ -41,6 +45,7 @@ describe('Validation Middleware', () => {
         return this;
       },
     };
+
     next = sinon.stub() as unknown as sinon.SinonStub;
     statusStub = sinon.stub(res, 'status').returns(res as any);
     jsonStub = sinon.stub(res, 'json').returns(res as any);

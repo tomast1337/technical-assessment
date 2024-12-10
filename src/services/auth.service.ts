@@ -1,10 +1,10 @@
 import { env } from '@config/index';
 import { UserModel } from '@models/index';
 import { User } from '@models/user.model';
-import * as bcrypt from 'bcryptjs';
-import * as jwt from 'jsonwebtoken';
 import { LoginUserDto } from '@views/LoginUser.dto';
 import { RegisterUserDto } from '@views/RegisterUser.dto';
+import * as bcrypt from 'bcryptjs';
+import * as jwt from 'jsonwebtoken';
 
 export type JwtPayloadT = {
   id: string;
@@ -85,6 +85,7 @@ class AuthService {
         token,
         env.JWT_REFRESH_SECRET,
       ) as DecodedTokenT;
+
       const user = await UserModel.findOne<User>({ _id: payload.id });
 
       if (!user) {
