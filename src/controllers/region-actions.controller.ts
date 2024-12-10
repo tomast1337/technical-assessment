@@ -3,10 +3,10 @@ import { StatusCodes } from 'http-status-codes';
 import passport from 'passport';
 
 import { validationQueryMiddleware } from '@app/middlewares/validationMiddleware';
+import { DecodedTokenT } from '@app/services/auth.service';
 import { GeoDistanceDto } from '@app/views/GeoDistance.dto';
 import { GeoPointDto } from '@app/views/GeoPoint.dto';
 import RegionService from '@services/region.service';
-import { DecodedTokenT } from '@app/services/auth.service';
 
 const { getRegionsContainingPoint, getRegionsNearPoint } = RegionService;
 
