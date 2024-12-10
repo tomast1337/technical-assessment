@@ -1,24 +1,18 @@
-import { Request, Response, Router } from 'express';
+import { validationBodyMiddleware } from '@middlewares/validationMiddleware';
 import {
+  DecodedTokenT,
+  RefreshToken,
   loginUser,
-  registerUser,
   me,
+  registerUser,
   updatePassword,
-} from 'src/services/auth.service';
-
-import { validationMiddleware } from '@middlewares/validationMiddleware';
-import {
-  LoginUserDto,
-  RegisterUserDto,
-  UpdatePasswordDto,
-} from '@views/auth.dto';
-
-import {
-  ReasonPhrases,
-  StatusCodes,
-  getReasonPhrase,
-  getStatusCode,
-} from 'http-status-codes';
+} from '@services/auth.service';
+import { LoginUserDto } from '@views/LoginUser.dto';
+import { UpdatePasswordDto } from '@views/UpdatePassword.dto';
+import { RegisterUserDto } from '@views/RegisterUser.dto';
+import { Request, Response, Router } from 'express';
+import { StatusCodes } from 'http-status-codes';
+import passport = require('passport');
 
 export const authRouter = Router();
 
@@ -62,7 +56,7 @@ export const authRouter = Router();
  */
 authRouter.post(
   '/register',
-  validationMiddleware(RegisterUserDto),
+  validationBodyMiddleware(RegisterUserDto),
   async (req: Request, res: Response) => {
     const { name, email, password, address } = req.body;
 
@@ -103,7 +97,7 @@ authRouter.post(
  */
 authRouter.post(
   '/login',
-  validationMiddleware(LoginUserDto),
+  validationBodyMiddleware(LoginUserDto),
   async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
@@ -119,36 +113,76 @@ authRouter.post(
 /**
  * @swagger
  * /api/auth/me:
- *  get:
- *   summary: Get the current user
- *  tags: [Auth]
- * security:
- *  - bearerAuth: []
- *
- *  responses:
- *   200:
- *   description: The current user
- *  content:
- *  application/json:
- *  schema:
- *  type: object
+ *   get:
+ *     summary: Get the current user
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: The current user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *       400:
+ *         description: Bad request
  */
-authRouter.get('/me', async (req: Request, res: Response) => {
-  const { id } = req.user as any; // TODO: Fix this any
-  try {
-    const result = await me(id);
-    res.status(StatusCodes.OK).json(result);
-  } catch (error) {
-    res.status(StatusCodes.BAD_REQUEST).json({ message: error.message });
-  }
-});
+authRouter.get(
+  '/me',
+  passport.authenticate('jwt', { session: false }),
+  async (req: Request, res: Response) => {
+    const { id } = req.user as DecodedTokenT;
 
+    try {
+      const result = await me(id);
+      res.status(StatusCodes.OK).json(result);
+    } catch (error) {
+      res.status(StatusCodes.BAD_REQUEST).json({ message: error.message });
+    }
+  },
+);
+
+/**
+ * @swagger
+ * /api/auth/update-password:
+ *   put:
+ *     summary: Update the user's password
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - password
+ *             properties:
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password updated successfully
+ *       400:
+ *         description: Bad request
+ */
 authRouter.put(
-  '/updatePassword',
-  validationMiddleware(UpdatePasswordDto),
+  '/update-password',
+  passport.authenticate('jwt', { session: false }),
+  validationBodyMiddleware(UpdatePasswordDto),
   async (req: Request, res: Response) => {
     const { password } = req.body;
-    const { id } = req.user as any; // TODO: Fix this any
+    const { id } = req.user as DecodedTokenT;
+
     try {
       const result = await updatePassword(id, password);
       res.status(StatusCodes.OK).json(result);
@@ -157,3 +191,32 @@ authRouter.put(
     }
   },
 );
+
+/**
+ * @swagger
+ * /api/auth/refresh-token:
+ *   post:
+ *     summary: Refresh the user's token
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: Token refreshed successfully
+ *       400:
+ *         description: Bad request
+ */
+authRouter.post('/refresh-token', async (req: Request, res: Response) => {
+  const refreshToken = req.cookies['refresh-token'];
+
+  if (!refreshToken) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: 'Refresh token cookie not found' });
+  }
+
+  try {
+    const result = await RefreshToken(refreshToken);
+    res.status(StatusCodes.OK).json(result);
+  } catch (error) {
+    res.status(StatusCodes.BAD_REQUEST).json({ message: error.message });
+  }
+});
