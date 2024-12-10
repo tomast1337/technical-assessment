@@ -15,6 +15,7 @@
     "lib": ["ES2020"],
     "baseUrl": ".",
     "paths": {
+      "@app/*": ["src/*"],
       "@controllers/*": ["src/controllers/*"],
       "@services/*": ["src/services/*"],
       "@models/*": ["src/models/*"],
