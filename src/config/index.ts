@@ -53,13 +53,14 @@ const env = plainToClass(Environment, {
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET,
   JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN,
   PORT: parseInt(process.env.PORT || '', 10),
-  NODE_ENV: process.env.NODE_ENV,
+  NODE_ENV: process.env.NODE_ENV || 'development',
   GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY,
 });
 
 const errors = validateSync(env, { skipMissingProperties: false });
 
 if (errors.length > 0) {
+  console.log(errors);
   throw new Error(errors.toString());
 }
 
