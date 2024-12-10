@@ -1,6 +1,7 @@
+import { Client } from '@googlemaps/google-maps-services-js';
 import { expect } from 'chai';
 import sinon from 'sinon';
-import { Client } from '@googlemaps/google-maps-services-js';
+
 import GeoLib from './lib';
 
 describe('GeoLib', function () {
