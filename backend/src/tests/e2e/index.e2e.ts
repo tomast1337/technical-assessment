@@ -250,7 +250,7 @@ describe('E2E', () => {
 
         const newPassword = faker.internet.password();
 
-        await axiosInstance.put(
+        await axiosInstance.patch(
           `/auth/update-password/`,
           {
             password: newPassword,
@@ -500,7 +500,7 @@ describe('E2E', () => {
       });
     });
 
-    describe('PUT /api/region/:id', () => {
+    describe('PATCH /api/region/:id', () => {
       it('should update a region by ID', async () => {
         const region = await RegionService.createRegion(userId, {
           name: 'Test Region',
@@ -531,7 +531,7 @@ describe('E2E', () => {
         };
 
         try {
-          const res = await axiosInstance.put(
+          const res = await axiosInstance.patch(
             `/region/${region._id}`,
             updatedData,
             {
@@ -565,7 +565,7 @@ describe('E2E', () => {
         };
 
         try {
-          await axiosInstance.put(`/region/i-dont-exist`, updatedData, {
+          await axiosInstance.patch(`/region/i-dont-exist`, updatedData, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -893,7 +893,7 @@ describe('E2E', () => {
       });
     });
 
-    describe('PUT /api/user/me', () => {
+    describe('PATCH /api/user/me', () => {
       it('should update the current user information', async () => {
         const newName = faker.person.firstName();
 
@@ -901,7 +901,7 @@ describe('E2E', () => {
           useFullAddress: true,
         });
 
-        const result = await axiosInstance.put(
+        const result = await axiosInstance.patch(
           '/user/me',
           {
             name: newName,
