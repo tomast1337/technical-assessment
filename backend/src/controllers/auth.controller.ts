@@ -120,7 +120,7 @@ authRouter.post(
 /**
  * @swagger
  * /api/auth/update-password:
- *   put:
+ *   patch:
  *     summary: Update the user's password
  *     tags: [Auth]
  *     security:
@@ -142,7 +142,7 @@ authRouter.post(
  *       400:
  *         description: Bad request
  */
-authRouter.put(
+authRouter.patch(
   '/update-password',
   passport.authenticate('jwt', { session: false }),
   validationBodyMiddleware(UpdatePasswordDto),

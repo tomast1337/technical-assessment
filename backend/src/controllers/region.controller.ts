@@ -127,7 +127,7 @@ regionRouter.get(
 /**
  * @swagger
  * /api/region/{id}:
- *   put:
+ *   patch:
  *     summary: Update a region by ID
  *     tags: [Region]
  *     security:
@@ -170,7 +170,7 @@ regionRouter.get(
  *       404:
  *         description: Region not found
  */
-regionRouter.put(
+regionRouter.patch(
   '/:id',
   passport.authenticate('jwt', { session: false }),
   validationBodyMiddleware(RegionDto),

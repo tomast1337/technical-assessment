@@ -74,7 +74,7 @@ userRouter.get(
 /**
  * @swagger
  * /api/user/me:
- *   put:
+ *   patch:
  *     summary: Update the current user's information
  *     tags: [User]
  *     security:
@@ -100,7 +100,7 @@ userRouter.get(
  *       400:
  *         description: Bad request
  */
-userRouter.put(
+userRouter.patch(
   '/me',
   passport.authenticate('jwt', { session: false }),
   validationBodyMiddleware(UpdateUserDto),
